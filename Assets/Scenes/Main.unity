@@ -119,6 +119,53 @@ NavMeshSettings:
     debug:
       m_Flags: 0
   m_NavMeshData: {fileID: 0}
+--- !u!1 &136663338
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 136663340}
+  - component: {fileID: 136663339}
+  m_Layer: 0
+  m_Name: EnemySpawner
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &136663339
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 136663338}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c374571fa29543a43a2544180809b083, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::EnemySpawner
+  enemyPrefab: {fileID: 7148497772640522725, guid: 7d8711dc9c6330147aad802ec6956dc3, type: 3}
+  interval: 2
+  radius: 10
+--- !u!4 &136663340
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 136663338}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -0.86372, y: 0.25544, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &514506021
 GameObject:
   m_ObjectHideFlags: 0
@@ -269,6 +316,7 @@ GameObject:
   - component: {fileID: 980609850}
   - component: {fileID: 980609849}
   - component: {fileID: 980609854}
+  - component: {fileID: 980609855}
   m_Layer: 0
   m_Name: Player
   m_TagString: Player
@@ -427,9 +475,23 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::PlayerMovement
   moveSpeed: 6
   inputActions: {fileID: -944628639613478452, guid: 2bcd2660ca9b64942af0de543d8d7100, type: 3}
+--- !u!114 &980609855
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 980609848}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0c8146e100d07b14f84ba1dda76e359a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Health
+  maxHealth: 100
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
   m_Roots:
   - {fileID: 514506024}
   - {fileID: 980609852}
+  - {fileID: 136663340}
