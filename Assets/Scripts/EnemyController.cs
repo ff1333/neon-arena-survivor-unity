@@ -1,4 +1,6 @@
+using System.Runtime.CompilerServices;
 using UnityEngine;
+
 
 [RequireComponent(typeof(Rigidbody2D), typeof(Health))]
 public class EnemyController : MonoBehaviour
@@ -11,9 +13,13 @@ public class EnemyController : MonoBehaviour
     private Transform target;
     private float nextAttackTime;
 
+    private Health health;
+
     private void Awake()
     {
         body = GetComponent<Rigidbody2D>();
+        health = GetComponent<Health>();
+        health.Died += HandleDied;
     }
 
     private void Start()
@@ -47,10 +53,18 @@ public class EnemyController : MonoBehaviour
             playerHealth.TakeDamage(contactDamage);
             Debug.Log($"Player Hp: {playerHealth.Current}");
         }
-        
-        
 
     }
+    private void OnDestroy()
+    {
+        if (health != null)
+        {
+            health.Died -= HandleDied;
+        }
+    }
 
-
+    private void HandleDied()
+    {
+        Destroy(gameObject);
+    }
 }

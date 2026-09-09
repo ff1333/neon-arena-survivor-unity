@@ -317,6 +317,7 @@ GameObject:
   - component: {fileID: 980609849}
   - component: {fileID: 980609854}
   - component: {fileID: 980609855}
+  - component: {fileID: 980609856}
   m_Layer: 0
   m_Name: Player
   m_TagString: Player
@@ -488,6 +489,23 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Health
   maxHealth: 100
+--- !u!114 &980609856
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 980609848}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 14536866af9e08443b25419262ad3687, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerShooter
+  projectilePrefab: {fileID: 5747264717280945191, guid: 613896555c5cd5440a19952d60efe147, type: 3}
+  fireInterval: 0.4
+  projectileSpeed: 12
+  damage: 25
+  range: 12
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
