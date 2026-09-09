@@ -11,6 +11,7 @@
 
 # IDE files
 .vs/
+.vsconfig
 .idea/
 .vscode/
 *.csproj
