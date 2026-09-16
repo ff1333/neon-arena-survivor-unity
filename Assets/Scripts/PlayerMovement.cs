@@ -51,4 +51,9 @@ public class PlayerMovement : MonoBehaviour
         body.MovePosition(nextPosition);
     }
 
+    public void AddMoveSpeed(float amount)
+    {
+        moveSpeed = Mathf.Max(0.5f, moveSpeed + amount);
+    }
+
 }

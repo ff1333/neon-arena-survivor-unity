@@ -13,6 +13,8 @@ GameObject:
   - component: {fileID: 455934546729737054}
   - component: {fileID: 2078652235703269862}
   - component: {fileID: 6958522498256906623}
+  - component: {fileID: 573890842429564803}
+  - component: {fileID: 542864870600152415}
   m_Layer: 0
   m_Name: Projectile
   m_TagString: Untagged
@@ -170,3 +172,27 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Projectile
   lifeTime: 2
+--- !u!114 &573890842429564803
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5747264717280945191}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2eeb826bd68044b469376600e36442d4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PoolMember
+--- !u!114 &542864870600152415
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5747264717280945191}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2eeb826bd68044b469376600e36442d4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PoolMember

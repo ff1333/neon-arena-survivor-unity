@@ -2,7 +2,8 @@ using UnityEngine;
 
 public class EnemySpawner : MonoBehaviour
 {
-    [SerializeField] private GameObject enemyPrefab;
+    [SerializeField] private GameObjectPool enemyPool;
+    [SerializeField] private GameObjectPool experiencePool;
     [SerializeField] private float interval = 2f;
     [SerializeField] private float radius = 10f;
 
@@ -23,6 +24,7 @@ public class EnemySpawner : MonoBehaviour
         nextSpawnTime = Time.time + interval;
         float angle = Random.Range(0f, Mathf.PI * 2f);
         Vector3 offset = new Vector3(Mathf.Cos(angle), Mathf.Sin(angle), 0f) * radius;
-        Instantiate(enemyPrefab, player.position + offset, Quaternion.identity);
+        GameObject enemyObject = enemyPool.Get(player.position + offset, Quaternion.identity);
+        enemyObject.GetComponent<EnemyController>().Spawn(player, experiencePool);
     }
 }

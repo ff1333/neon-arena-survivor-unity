@@ -1,8 +1,7 @@
-using System.Runtime.CompilerServices;
 using UnityEngine;
 
 
-[RequireComponent(typeof(Rigidbody2D), typeof(Health))]
+[RequireComponent(typeof(Rigidbody2D), typeof(Health), typeof(PoolMember))]
 public class EnemyController : MonoBehaviour
 {
     [SerializeField] private float moveSpeed = 2f;
@@ -14,22 +13,39 @@ public class EnemyController : MonoBehaviour
     private float nextAttackTime;
 
     private Health health;
+    private PoolMember poolMember;
+    private GameObjectPool experiencePool;
 
     private void Awake()
     {
         body = GetComponent<Rigidbody2D>();
         health = GetComponent<Health>();
+        poolMember = GetComponent<PoolMember>();
         health.Died += HandleDied;
     }
 
-    private void Start()
+    private void OnEnable()
     {
-        GameObject player = GameObject.FindGameObjectWithTag("Player");
-        if (player != null)
-        {
-            target = player.transform;
-        }
+        nextAttackTime = 0f;
+        health.RestoreFull();
     }
+
+    private void OnDestroy()
+    {
+        if (health != null)
+        {
+            health.Died -= HandleDied;
+        }
+        
+    }
+
+    public void Spawn(Transform newTarget, GameObjectPool newExperiencePool)
+    {
+        target = newTarget;
+        experiencePool = newExperiencePool;
+        health.RestoreFull();
+    }
+
 
     private void FixedUpdate()
     {
@@ -55,16 +71,15 @@ public class EnemyController : MonoBehaviour
         }
 
     }
-    private void OnDestroy()
-    {
-        if (health != null)
-        {
-            health.Died -= HandleDied;
-        }
-    }
 
     private void HandleDied()
     {
-        Destroy(gameObject);
+        if (experiencePool != null)
+        {
+            // Spawn experience pickup at enemy's location
+            GameObject pickupObject = experiencePool.Get(transform.position, Quaternion.identity);
+            pickupObject.GetComponent<ExperiencePickup>().Configure(1);
+        }
+        poolMember.Release();
     }
 }

@@ -14,6 +14,7 @@ GameObject:
   - component: {fileID: 3857717113260858784}
   - component: {fileID: 7606767753268192530}
   - component: {fileID: 7020664280190390183}
+  - component: {fileID: 4471087862202340446}
   m_Layer: 0
   m_Name: Enemy
   m_TagString: Enemy
@@ -186,3 +187,15 @@ MonoBehaviour:
   moveSpeed: 2
   contactDamage: 10
   attackInterval: 1
+--- !u!114 &4471087862202340446
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7148497772640522725}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2eeb826bd68044b469376600e36442d4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PoolMember

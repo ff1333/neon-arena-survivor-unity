@@ -2,7 +2,7 @@ using UnityEngine;
 
 public class PlayerShooter : MonoBehaviour
 {
-    [SerializeField] private GameObject projectilePrefab;
+    [SerializeField] private GameObjectPool projectilePool;
     [SerializeField] private float fireInterval = 0.4f;
     [SerializeField] private float projectileSpeed = 12f;
     [SerializeField] private float damage = 25f;
@@ -23,8 +23,9 @@ public class PlayerShooter : MonoBehaviour
         }
         nextFireTime = Time.time + fireInterval;
         Vector2 direction = target.transform.position - transform.position;
-        GameObject projectileObject = Instantiate(projectilePrefab, transform.position, Quaternion.identity);
-        projectileObject.GetComponent<Projectile>().Fire(direction, projectileSpeed, damage);
+        GameObject projectileObject = projectilePool.Get(transform.position, Quaternion.identity);
+        Projectile projectile = projectileObject.GetComponent<Projectile>();
+        projectile.Fire(direction, projectileSpeed, damage);
     }
 
     private GameObject FindNearestEnemy()
@@ -44,5 +45,15 @@ public class PlayerShooter : MonoBehaviour
 
 
         return nearest;
+    }
+
+    public void AddDamage(float amount)
+    {
+        damage = Mathf.Max(1f, damage + amount);
+    }
+
+    public void ReduceFireInterval(float amount)
+    {
+        fireInterval = Mathf.Max(0.08f, fireInterval - amount);
     }
 }

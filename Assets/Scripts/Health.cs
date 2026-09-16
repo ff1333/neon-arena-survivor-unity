@@ -35,4 +35,33 @@ public class Health : MonoBehaviour
             Died?.Invoke();
         }
     }
+
+    public void RestoreFull()
+    {
+        Current = maxHealth;
+        Changed?.Invoke(Current, maxHealth);
+    }
+
+    public void Heal(float amount)
+    {
+        if (IsDead || amount <= 0f)
+        {
+            return;
+        }
+
+        Current = Mathf.Min(maxHealth, Current + amount);
+        Changed?.Invoke(Current, maxHealth);
+    }
+
+    public void AddMaxHealth(float amount)
+    {
+        if (amount <= 0f)
+        { 
+            return;
+        }
+
+        maxHealth += amount;
+        Current += amount;
+        Changed?.Invoke(Current, maxHealth);
+    }
 }
