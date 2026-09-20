@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 
 
@@ -15,6 +16,7 @@ public class EnemyController : MonoBehaviour
     private Health health;
     private PoolMember poolMember;
     private GameObjectPool experiencePool;
+    public static event Action DiedGlobally;
 
     private void Awake()
     {
@@ -80,6 +82,7 @@ public class EnemyController : MonoBehaviour
             GameObject pickupObject = experiencePool.Get(transform.position, Quaternion.identity);
             pickupObject.GetComponent<ExperiencePickup>().Configure(1);
         }
+        DiedGlobally?.Invoke();
         poolMember.Release();
     }
 }

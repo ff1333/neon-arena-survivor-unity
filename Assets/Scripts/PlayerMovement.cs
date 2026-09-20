@@ -6,14 +6,17 @@ public class PlayerMovement : MonoBehaviour
 {
     [SerializeField] private float moveSpeed = 6f;
     [SerializeField] private InputActionAsset inputActions;
+    [SerializeField, Min(0f)] private float edgePadding = 0.45f;
 
     private Rigidbody2D body;
     private InputAction moveAction;
+    private Camera mainCamera;
     private Vector2 input;
     
     private void Awake()
     {
         body = GetComponent<Rigidbody2D>();
+        mainCamera = Camera.main;
 
         if (inputActions == null)
         {
@@ -48,6 +51,16 @@ public class PlayerMovement : MonoBehaviour
     private void FixedUpdate()
     {
         Vector2 nextPosition = body.position + input * moveSpeed * Time.fixedDeltaTime;
+        
+        if (mainCamera != null && mainCamera.orthographic)
+        {
+            float halfHeight = Mathf.Max(0f, mainCamera.orthographicSize - edgePadding);
+            float halfWidth = Mathf.Max(0f, mainCamera.orthographicSize * mainCamera.aspect - edgePadding);
+            Vector3 cameraPosition = mainCamera.transform.position;
+            nextPosition.x = Mathf.Clamp(nextPosition.x, cameraPosition.x - halfWidth, cameraPosition.x + halfWidth);
+            nextPosition.y = Mathf.Clamp(nextPosition.y, cameraPosition.y - halfHeight, cameraPosition.y + halfHeight);
+        }
+
         body.MovePosition(nextPosition);
     }
 

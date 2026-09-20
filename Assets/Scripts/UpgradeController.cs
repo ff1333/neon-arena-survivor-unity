@@ -52,6 +52,7 @@ public class UpgradeController : MonoBehaviour
             remaining.RemoveAt(randomIndex);
             labels[i].text = $"{currentChoices[i].Title}\n{currentChoices[i].Description}";
         }
+        upgradePanel.transform.SetAsLastSibling();
         upgradePanel.SetActive(true);
         Time.timeScale = 0f;
     }
