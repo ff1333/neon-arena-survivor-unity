@@ -1,17 +1,17 @@
 # 第 10.8 节：独立需求变化设计稿
 
 日期：2026-09-25  
-状态：需求已拆分，尚未实现、测试或验收  
+状态：需求和实施顺序已确定，尚未实现、测试或验收
 基线：`main` 分支当前可完整运行的固定竞技场版本
 
 ## 一、问题与目标
 
 当前版本把玩家、敌人和掉落都限制在单屏竞技场中。这个方案解决了界外击杀和经验不可拾取，但随着敌人数量增加，玩家缺少拉扯空间；自动索敌、单弹道和持续接触伤害也让后期策略较单一。
 
-本轮想法包括：
+本轮改动包括：
 
 1. 扩大为有边界的大地图，相机跟随玩家，敌人允许在画面外但必须在地图内出生。
-2. 索敌改为“最近距离带内优先最低血量”，并加入最多五弹道的阶段性升级。
+2. 索敌改为“最近距离带内优先最低血量”，并加入攻击距离和最多五弹道的武器成长升级。
 3. 敌人碰到玩家后造成一次固定伤害并立即消失，不再持续攻击。
 4. 生成间隔随存活时间缩短，但必须存在最小间隔。
 
@@ -39,6 +39,16 @@ Projectile 当前离开相机视口后会立即回池。如果 Shooter 选择画
 - 子弹继续在离开视口后回池。
 - 经验只会由可视范围内死亡的敌人产生，因此仍然可到达。
 
+攻击距离不能代替视口检查。当前 Main Camera 的正交尺寸是 5；在 16:9 下，画面中心到左右边缘约 8.89 个世界单位，而 PlayerShooter 当前 `range = 12`，所以部分画面外敌人仍可能处于攻击距离内。画面是矩形、攻击范围是圆，而且宽高比改变后可见边界也会改变。大地图版本必须同时满足两个条件：
+
+```text
+敌人与玩家的距离 <= attackRange
+并且
+敌人位置位于当前相机视口内
+```
+
+攻击距离升级仍然有价值：它决定玩家能攻击视野内多远的目标；视口检查则保证不会锁定尚未进入画面的敌人。本轮把攻击范围固定为初始 3、每次增加 0.5、上限 4.5。视口检查仍需保留，因为窗口宽高比改变，或大地图相机在世界边缘停止而玩家偏离画面中心时，固定半径仍可能有一部分伸到画面外。两个规则职责不同。
+
 ### 3. 敌人撞击自毁默认不奖励经验和击杀
 
 若玩家被撞后，敌人通过普通 `Health.Died` 链路死亡，它会掉落经验并增加击杀数，这会反向鼓励玩家故意挨打。本设计默认：
@@ -59,13 +69,13 @@ currentInterval = Max(minimumInterval,
                       startingInterval - elapsed * intervalDecreasePerSecond)
 ```
 
-当前参数为起始 `1.5s`、最低 `0.55s`、每秒减少 `0.004s`，约在 237.5 秒后达到下限。真正导致难度突然上升的是另一条规则：45 秒后每波 2 只，90 秒后每波 3 只。
+旧参数为起始 `1.5s`、最低 `0.55s`、每秒减少 `0.004s`。真正导致难度突然上升的是另一条规则：45 秒后每波 2 只，90 秒后每波 3 只。
 
-本轮平衡建议先保持“每波 1 只”，只观察连续缩短间隔的效果。否则“间隔缩短”和“每波数量增加”同时叠加，很难判断是哪条曲线导致失衡。
+本轮固定为每波 1 只，起始间隔 `1.5s`，最低间隔 `0.65s`，每秒减少 `0.004s`。这样只保留连续缩短间隔，不再叠加波次数突增。
 
 ## 三、里程碑 A：最近距离带内优先最低血量
 
-这是第 10.8 节正式选择的独立需求。先只做这一项，不同时加入多弹道或大地图。
+这一项在同一个功能分支中单独形成一次提交，测试通过后再进入下一项。
 
 ### 用户故事
 
@@ -79,13 +89,13 @@ currentInterval = Max(minimumInterval,
 4. 候选中当前血量最低者优先。
 5. 血量相同时，距离更近者优先。
 6. 没有合法目标时不发射，也不消耗本次射击冷却。
-7. 当前单屏版本所有敌人都可见；大地图里程碑实施后，再增加“必须在视口内”的过滤条件。
+7. 敌人还必须位于当前相机视口内；画面外敌人不参与索敌。
 
 ### 为什么由 PlayerShooter 负责
 
 目标搜索、射程和射击时机本来就属于 PlayerShooter。Health 只提供只读 `Current`，不应该反向知道谁在选择目标；EnemyController 也不应该管理玩家的武器策略。
 
-### 可能修改的脚本
+### 修改内容
 
 - `PlayerShooter.cs`：新增 `priorityBandWidth`，重写目标选择算法。
 - `Health.cs`：不需要修改，已有公开只读属性 `Current`。
@@ -103,7 +113,7 @@ PlayerShooter 找到最近距离 -> 形成距离带 -> 读取候选 Health.Curre
 1. 最近敌人在 3 米，残血敌人在 4 米且带宽为 1.5：残血敌人属于候选，可被优先选择。
 2. 最近敌人在 3 米，残血敌人在 5 米：残血敌人不属于候选，仍攻击近处敌人，避免为了补刀忽略贴脸威胁。
 3. 两个候选血量相同：选择距离更近者。
-4. Enemy 标签对象缺少 Health：跳过该对象并输出一次可定位的警告，不能抛空引用。
+4. Enemy 标签对象缺少 Health：跳过该对象，不能抛空引用。
 5. 所有敌人都在射程外：返回 null，不发射。
 
 ### 验收用例
@@ -119,19 +129,17 @@ PlayerShooter 找到最近距离 -> 形成距离带 -> 读取候选 Health.Curre
 完成 10.3、10.4 的脱稿检查，并确认 main 已 push 后再执行：
 
 ```powershell
-git switch main
-git pull --ff-only
-git switch -c feature/target-priority
+git switch -c feature/gameplay-expansion
 ```
 
 实现和测试通过后提交：
 
 ```powershell
-git add Assets/Scripts/PlayerShooter.cs docs/learning/independent-change.md
+git add Assets/Scripts/PlayerShooter.cs Assets/Scenes/Main.unity
 git commit -m "feat: prioritize low-health nearby enemies"
 ```
 
-提交后先进行代码审查，不提前合并。
+提交后继续同一分支中的下一里程碑，不提前合并。
 
 ## 四、里程碑 B：碰撞伤害后敌人自毁
 
@@ -152,7 +160,7 @@ git commit -m "feat: prioritize low-health nearby enemies"
 
 接触检测、接触伤害和敌人回池本来都属于单个敌人的行为。Health 只处理数值，不应决定伤害来源打完后是否消失。
 
-### 可能修改的脚本与状态
+### 修改的脚本与状态
 
 - `EnemyController.cs`：把持续接触逻辑改成首次接触逻辑；新增 `bool hasHitPlayer`，在 `OnEnable` 重置。
 - 删除或停止使用 `attackInterval`、`nextAttackTime`，因为不再持续攻击。
@@ -165,7 +173,7 @@ git commit -m "feat: prioritize low-health nearby enemies"
 - [ ] 同一物理帧出现重复触发时，玩家不会被同一敌人扣两次血。
 - [ ] 子弹击杀仍然掉经验并增加击杀，不受该修改影响。
 
-### 建议提交
+### 提交
 
 ```text
 feat: make enemies expire after contact damage
@@ -183,7 +191,7 @@ feat: make enemies expire after contact damage
 2. 保留 `minimumInterval` 下限。
 3. 第一轮平衡测试中固定每波 1 只，不在 45/90 秒额外增加波次数。
 4. 所有参数继续由 Inspector 配置，不把数值写死在 Update。
-5. 使用实际 1、2、4、6 分钟试玩结果决定最终参数。
+5. 本轮参数固定为 `1.5 / 0.65 / 0.004`，用 1、2、4、6 分钟试玩验证曲线。
 
 ### 当前公式的可验证结果
 
@@ -195,12 +203,12 @@ feat: make enemies expire after contact damage
 | 60 秒 | 1.26 秒 |
 | 120 秒 | 1.02 秒 |
 | 180 秒 | 0.78 秒 |
-| 240 秒及以后 | 0.55 秒，下限生效 |
+| 213 秒及以后 | 0.65 秒，下限生效 |
 
-### 可能修改的脚本
+### 修改内容
 
-- `EnemySpawner.cs`：暂时移除每波数量随时间增加，或把 `maximumEnemiesPerWave` 配为 1。
-- `Main.unity`：保存最终 Inspector 参数。
+- `EnemySpawner.cs`：删除每波数量随时间增加的逻辑，固定每波调用一次 `SpawnOne()`。
+- `Main.unity`：保存 `1.5 / 0.65 / 0.004` 三个 Inspector 参数。
 
 ### 验收用例
 
@@ -209,44 +217,49 @@ feat: make enemies expire after contact damage
 - [ ] 难度变化是连续的，不在 45/90 秒突然成倍跳升。
 - [ ] 连续运行 6 分钟没有无限刷怪、卡死或 Console 红色错误。
 
-### 建议提交
+### 提交
 
 ```text
 balance: smooth enemy spawn pressure over time
 ```
 
-## 六、里程碑 D：阶段性多弹道升级
+## 六、里程碑 D：攻击距离与阶段性多弹道升级
 
 ### 用户故事
 
-作为玩家，我希望在等级达到 3 的倍数时有机会选择增加一条弹道，形成清晰的成长节点；弹道数最多为 5，达到上限后不再出现无效选项。
+作为玩家，我希望通过普通升级逐步扩大攻击距离，并在等级达到 3 的倍数时固定看到一个增加弹道选项，形成从攻击覆盖到弹幕宽度的两条武器成长路线。两项升级达到上限后都不应继续出现。
 
 ### 行为规则
 
 1. 初始弹道数为 1。
-2. 玩家新等级为 3、6、9、12……时，“增加弹道”才进入本次候选池。
-3. 它只是有资格参与三选一，不保证每次一定出现。
+2. 玩家新等级为 3、6、9、12……时，只要弹道未满，“增加弹道”必定占据三个选项中的一个随机位置。
+3. 其余两个位置仍从合法升级中随机抽取，并且本次三个选项不重复。
 4. 选择后弹道数加 1，上限为 5。
 5. 达到 5 弹道后，该升级永久从候选池过滤。
-6. 多枚子弹围绕目标方向对称展开，建议相邻弹道角度为 12 度。
+6. 多枚子弹围绕目标方向对称展开，相邻弹道角度固定为 12 度。
 7. 偶数弹道同样围绕中心对称，例如 2 弹道为 `-6°/+6°`，不会整体偏向一侧。
 8. 一次射击只消耗一次冷却，所有弹道使用相同伤害值。
+9. 攻击距离从 3 个世界单位开始，每次升级增加 0.5，上限为 4.5。
+10. “增加攻击距离”每次升级都可进入候选池，不要求等级为 3 的倍数。
+11. 攻击距离达到上限后，该升级从候选池过滤。
+12. 大地图版本中，攻击距离提高也不能锁定视口外敌人。
 
-### 可能修改的脚本和资产
+### 修改的脚本和资产
 
-- `UpgradeEffectType.cs`：新增 `ProjectileCount`。
-- `PlayerShooter.cs`：保存 `projectileCount`、上限、扩散角，并循环从池中取出多枚子弹。
-- `PlayerUpgradeApplier.cs`：应用 ProjectileCount，并提供“是否仍可应用”的判断入口。
-- `UpgradeController.cs`：按当前 Level 和弹道上限过滤可用升级。
-- `PlayerUpgradeData.cs`：视实现选择是否加入等级条件；不要把等级判断写进 Button。
+- `UpgradeEffectType.cs`：新增 `AttackRange` 和 `ProjectileCount`。
+- `PlayerShooter.cs`：把现有 `range` 明确为可升级攻击距离；保存距离上限、`projectileCount`、弹道上限和扩散角，并循环从池中取出多枚子弹。
+- `PlayerUpgradeApplier.cs`：应用 AttackRange 和 ProjectileCount，并提供“是否仍可应用”的判断入口。
+- `UpgradeController.cs`：按当前 Level、攻击距离上限和弹道上限过滤可用升级。
+- `PlayerUpgradeData.cs`：不修改；等级判断统一写在 `PlayerUpgradeApplier.CanApply` 中。
+- `Assets/Data/Upgrade_AttackRange.asset`：新增攻击距离升级配置资产。
 - `Assets/Data/Upgrade_ProjectileCount.asset`：新增升级配置资产。
 - `Main.unity`：把新资产加入 availableUpgrades。
 
 ### 新增状态
 
-- PlayerShooter：当前弹道数、最大弹道数、相邻弹道角度。
+- PlayerShooter：当前攻击距离、最大攻击距离、当前弹道数、最大弹道数、相邻弹道角度。
 - UpgradeController：当前等级对应的候选列表。
-- 不把本局弹道数写入 ScriptableObject；资产是共享静态配置，运行时状态属于 PlayerShooter。
+- 不把本局攻击距离或弹道数写入 ScriptableObject；资产是共享静态配置，运行时状态属于 PlayerShooter。
 
 ### 弹道角度公式
 
@@ -258,17 +271,21 @@ offset = (index - (projectileCount - 1) / 2f) * spreadAngle
 
 ### 验收用例
 
+- [ ] 初始攻击距离外、但仍在画面内的敌人不会被攻击。
+- [ ] 选择一次 AttackRange 后，新增加的距离范围内敌人可以成为目标。
+- [ ] 攻击距离达到上限后，连续多次升级都不再出现 AttackRange。
+- [ ] 大地图中即使界外敌人处于攻击距离内，也不会被自动锁定。
 - [ ] Level 2、4、5 时三选一中不会出现增加弹道。
-- [ ] Level 3、6、9 等节点有资格出现，但三个选项仍不重复。
+- [ ] Level 3、6、9 等节点必定出现一个增加弹道选项，且三个选项仍不重复。
 - [ ] 1 到 5 弹道均围绕目标方向左右对称。
 - [ ] 达到 5 弹道后，连续多次升级都不再出现该选项。
 - [ ] 候选过滤后仍至少有三个合法升级，不会导致数组越界。
 - [ ] 多弹道下对象池不重复释放，Console 无红色错误。
 
-### 建议提交
+### 提交
 
 ```text
-feat: add capped multishot progression
+feat: add capped weapon range and multishot progression
 ```
 
 ## 七、里程碑 E：大地图与相机跟随
@@ -285,16 +302,16 @@ feat: add capped multishot progression
 2. Player 被限制在世界边界，而不是相机边界。
 3. Main Camera 在 `LateUpdate` 跟随 Player，并限制在世界边界内，不能拍到地图外。
 4. 敌人必须出生在世界边界内、相机视口外，并与玩家保持最小距离。
-5. 敌人也不能随机出生得无限远；优先在相机外侧的一圈生成，使其能在合理时间内进入战斗。
+5. 敌人与玩家的出生距离必须在 7 到 14 个世界单位之间。
 6. 只有进入视口且在武器射程内的敌人才参与索敌。
 7. Projectile 继续离开视口即回池。
-8. 地面必须有可重复的视觉纹理或 Tilemap，帮助玩家感知相机正在移动，不能只是无限黑色背景。
+8. 地面使用 40×24 的深灰色 Square Sprite，并用六条参考线显示相机移动。
 
 ### 不采用“全地图完全随机出生”的原因
 
-若在很大的地图矩形中完全随机，敌人可能离玩家极远，长时间无法进入画面；这些激活敌人会持续占用 CPU，数量不断积累，也让难度曲线失真。推荐在“相机外沿到稍远距离”之间采样，再裁剪到世界边界。
+若在很大的地图矩形中完全随机，敌人可能离玩家极远，长时间无法进入画面；这些激活敌人会持续占用 CPU，数量不断积累，也让难度曲线失真。本轮先在地图内随机采样，再严格检查视口和 7 到 14 单位距离；随机采样失败时执行固定环形扫描。
 
-### 可能新增或修改的内容
+### 新增或修改的内容
 
 - 新增 `CameraFollow.cs`：LateUpdate 平滑跟随并限制相机中心。
 - 新增或集中定义世界边界数据，避免 Player、Camera、Spawner 各写一套不一致的数值。
@@ -303,9 +320,9 @@ feat: add capped multishot progression
 - `PlayerShooter.cs`：增加视口内过滤。
 - `Main.unity`：扩大地面、配置相机跟随和边界。
 
-### 推荐初始尺寸
+### 固定尺寸
 
-第一版可用宽 40、高 24 个世界单位的竞技场。最终尺寸必须根据移动速度、相机可视尺寸和敌人到达时间试玩调整，不以“越大越好”为目标。
+本轮使用宽 40、高 24 个世界单位的竞技场，即 X=`-20..20`、Y=`-12..12`。
 
 ### 验收用例
 
@@ -318,23 +335,24 @@ feat: add capped multishot progression
 - [ ] 16:9、窄屏和宽屏下相机边界均正确。
 - [ ] 连续运行 6 分钟，场外没有永久滞留的敌人，Console 无红色错误。
 
-### 建议提交
+### 提交
 
 ```text
 feat: expand arena with bounded camera follow
 ```
 
-## 八、推荐实施顺序
+## 八、固定实施顺序
 
-不要一次创建一个包含全部功能的大分支。推荐顺序：
+本轮只使用 `feature/gameplay-expansion` 一个功能分支，按以下顺序完成，每个检查点单独测试和提交：
 
-1. `feature/target-priority`：完成第 10.8 节正式独立需求和代码审查。
-2. `feature/contact-sacrifice`：改变接触规则。
-3. `balance/spawn-curve`：单独验证难度曲线。
-4. `feature/multishot-upgrade`：扩展成长构筑。
-5. `feature/large-arena-camera`：最后改变整套空间规则。
+1. 建立 40×24 世界边界和相机跟随：`feat: add bounded arena camera`。
+2. 改为地图内、视口外、距玩家 7 到 14 单位刷怪，同时固定每波 1 只：`feat: spawn enemies outside camera bounds`。
+3. 加入视口过滤和最近距离带索敌：`feat: prioritize visible low-health enemies`。
+4. 加入攻击距离与多弹道升级：`feat: add capped weapon progression`。
+5. 改为敌人碰撞伤害后直接回池：`feat: make enemies expire after contact damage`。
+6. 完整回归测试、记录真实结果、代码审查后再合并到 `main` 并 push。
 
-每个分支都遵循：写验收 -> 实现 -> Unity 实测 -> 记录第一次失败 -> 提交 -> 代码审查 -> 合并 -> push。这样 GitHub 会形成面试官可以逐条阅读的真实迭代历史。
+完整操作只执行 `docs/rebuild_course/chapters/10_8_GAMEPLAY_EXPANSION_STEP_BY_STEP.md` 中的命令，不自行改变分支顺序。
 
 ## 九、当前不能提前填写的内容
 
