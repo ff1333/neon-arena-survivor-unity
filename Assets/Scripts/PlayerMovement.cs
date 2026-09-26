@@ -19,6 +19,12 @@ public class PlayerMovement : MonoBehaviour
 
         if (inputActions == null)
         {
+            Debug.LogError("PlayerMovement requires an Input Action Asset.", this);
+            return;
+        }
+
+        if (arenaBounds == null)
+        {
             Debug.LogError("PlayerMovement requires ArenaBounds.", this);
             return;
         }
