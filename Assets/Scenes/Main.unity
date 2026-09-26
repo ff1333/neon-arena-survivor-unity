@@ -2956,7 +2956,12 @@ MonoBehaviour:
   fireInterval: 0.4
   projectileSpeed: 12
   damage: 25
-  range: 12
+  range: 3
+  maximumRange: 4.5
+  priorityBandWidth: 1.5
+  projectileCount: 1
+  maximumProjectileCount: 5
+  spreadAngle: 12
 --- !u!114 &980609857
 MonoBehaviour:
   m_ObjectHideFlags: 0
