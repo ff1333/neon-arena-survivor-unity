@@ -6,6 +6,24 @@ public class PlayerUpgradeApplier : MonoBehaviour
     [SerializeField] private PlayerShooter shooter;
     [SerializeField] private Health health;
 
+    public bool CanApply(PlayerUpgradeData data, int level)
+    {
+        if (data == null)
+        {
+            return false;
+        }
+
+        switch (data.EffectType)
+        {
+            case UpgradeEffectType.AttackRange:
+                return shooter.CanIncreaseRange;
+            case UpgradeEffectType.ProjectileCount:
+                return level % 3 == 0 && shooter.CanIncreaseProjectileCount;
+            default:
+                return true;
+        }
+    }
+
     public void Apply(PlayerUpgradeData data)
     {
         switch (data.EffectType)
@@ -24,6 +42,12 @@ public class PlayerUpgradeApplier : MonoBehaviour
                 break;
             case UpgradeEffectType.MaxHealth:
                 health.AddMaxHealth(data.Value);
+                break;
+            case UpgradeEffectType.AttackRange:
+                shooter.AddRange(data.Value);
+                break;
+            case UpgradeEffectType.ProjectileCount:
+                shooter.AddProjectileCount(Mathf.RoundToInt(data.Value));
                 break;
         }
     }
