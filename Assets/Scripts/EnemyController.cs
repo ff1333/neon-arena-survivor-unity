@@ -1,21 +1,19 @@
 using System;
 using UnityEngine;
 
-
 [RequireComponent(typeof(Rigidbody2D), typeof(Health), typeof(PoolMember))]
 public class EnemyController : MonoBehaviour
 {
     [SerializeField] private float moveSpeed = 2f;
     [SerializeField] private float contactDamage = 10f;
-    [SerializeField] private float attackInterval = 1f;
 
     private Rigidbody2D body;
     private Transform target;
-    private float nextAttackTime;
-
     private Health health;
     private PoolMember poolMember;
     private GameObjectPool experiencePool;
+    private bool hasHitPlayer;
+
     public static event Action DiedGlobally;
 
     private void Awake()
@@ -28,7 +26,7 @@ public class EnemyController : MonoBehaviour
 
     private void OnEnable()
     {
-        nextAttackTime = 0f;
+        hasHitPlayer = false;
         health.RestoreFull();
     }
 
@@ -38,7 +36,6 @@ public class EnemyController : MonoBehaviour
         {
             health.Died -= HandleDied;
         }
-        
     }
 
     public void Spawn(Transform newTarget, GameObjectPool newExperiencePool)
@@ -48,40 +45,42 @@ public class EnemyController : MonoBehaviour
         health.RestoreFull();
     }
 
-
     private void FixedUpdate()
     {
         if (target == null)
         {
             return;
         }
+
         Vector2 direction = (target.position - transform.position).normalized;
         body.MovePosition(body.position + direction * moveSpeed * Time.fixedDeltaTime);
     }
 
-    private void OnTriggerStay2D(Collider2D other)
+    private void OnTriggerEnter2D(Collider2D other)
     {
-        if (!other.CompareTag("Player") || Time.time < nextAttackTime)
+        if (hasHitPlayer || !other.CompareTag("Player"))
         {
             return;
-        } 
-        nextAttackTime = Time.time + attackInterval;
-        if (other.TryGetComponent(out Health playerHealth))
-        {
-            playerHealth.TakeDamage(contactDamage);
-            Debug.Log($"Player Hp: {playerHealth.Current}");
         }
 
+        if (!other.TryGetComponent(out Health playerHealth))
+        {
+            return;
+        }
+
+        hasHitPlayer = true;
+        playerHealth.TakeDamage(contactDamage);
+        poolMember.Release();
     }
 
     private void HandleDied()
     {
         if (experiencePool != null)
         {
-            // Spawn experience pickup at enemy's location
             GameObject pickupObject = experiencePool.Get(transform.position, Quaternion.identity);
             pickupObject.GetComponent<ExperiencePickup>().Configure(1);
         }
+
         DiedGlobally?.Invoke();
         poolMember.Release();
     }
