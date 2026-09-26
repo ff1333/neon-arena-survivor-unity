@@ -5,22 +5,23 @@ public class EnemySpawner : MonoBehaviour
     [Header("Pools")]
     [SerializeField] private GameObjectPool enemyPool;
     [SerializeField] private GameObjectPool experiencePool;
+    [SerializeField] private GameObjectPool warningPool;
 
     [Header("Difficulty")]
     [SerializeField, Min(0.1f)] private float startingInterval = 1.5f;
-    [SerializeField, Min(0.1f)] private float minimumInterval = 0.55f;
+    [SerializeField, Min(0.1f)] private float minimumInterval = 0.65f;
     [SerializeField, Min(0f)] private float intervalDecreasePerSecond = 0.004f;
-    [SerializeField, Min(10f)] private float extraEnemyEverySeconds = 45f;
-    [SerializeField, Min(1)] private int maximumEnemiesPerWave = 3;
 
     [Header("Spawn Area")]
-    [SerializeField, Min(0f)] private float edgePadding = 0.6f;
-    [SerializeField, Min(0f)] private float minimumDistanceFromPlayer = 4f;
-    [SerializeField, Range(1, 32)] private int positionAttempts = 12;
+    [SerializeField] private ArenaBounds arenaBounds;
+    [SerializeField, Min(0f)] private float arenaPadding = 0.75f;
+    [SerializeField, Min(0f)] private float minimumDistanceFromPlayer = 5f;
+    [SerializeField, Range(1, 128)] private int positionAttempts = 64;
 
+    [Header("Warning")]
+    [SerializeField, Min(0f)] private float warningDuration = 1.5f;
 
     private Transform player;
-    private Camera mainCamera;
     private float nextSpawnTime;
     private float runStartTime;
 
@@ -29,16 +30,17 @@ public class EnemySpawner : MonoBehaviour
         GameObject playerObject = GameObject.FindGameObjectWithTag("Player");
         if (playerObject == null)
         {
-            Debug.LogError("EnemySpawner: No player found with tag 'Player'.", this);
+            Debug.LogError("EnemySpawner could not find the Player tag.", this);
             enabled = false;
             return;
         }
 
         player = playerObject.transform;
-        mainCamera = Camera.main;
-        if (mainCamera == null || !mainCamera.orthographic)
+
+        if (arenaBounds == null || enemyPool == null ||
+            experiencePool == null || warningPool == null)
         {
-            Debug.LogError("EnemySpawner requires an orthographic main camera.", this);
+            Debug.LogError("EnemySpawner requires ArenaBounds and all three pools.", this);
             enabled = false;
         }
     }
@@ -51,61 +53,75 @@ public class EnemySpawner : MonoBehaviour
 
     private void Update()
     {
-        if (Time.time < nextSpawnTime || player == null)
+        if (player == null || Time.time < nextSpawnTime)
         {
             return;
         }
-        float elapsed = Time.time - runStartTime;
-        float currentInterval = Mathf.Max(minimumInterval, startingInterval - elapsed * intervalDecreasePerSecond);
-        nextSpawnTime = Time.time + currentInterval;
-        
-        int enemiesThisWave = Mathf.Clamp(1 + Mathf.FloorToInt(elapsed / extraEnemyEverySeconds), 1, maximumEnemiesPerWave);
 
-        for (int i = 0; i < enemiesThisWave; i++)
-        {
-            SpawnOne();
-        }
+        float elapsed = Time.time - runStartTime;
+        float currentInterval = Mathf.Max(
+            minimumInterval,
+            startingInterval - elapsed * intervalDecreasePerSecond);
+
+        nextSpawnTime = Time.time + currentInterval;
+        SpawnOne();
     }
 
     private void SpawnOne()
     {
-        Vector3 spawnPosition = ChooseSpawnPosition();
-        GameObject enemyObject = enemyPool.Get(spawnPosition, Quaternion.identity);
-        enemyObject.GetComponent<EnemyController>().Spawn(player, experiencePool);
+        Vector3 warningPosition = ChooseSpawnPosition();
+        GameObject warningObject = warningPool.Get(warningPosition, Quaternion.identity);
+        warningObject.GetComponent<EnemySpawnWarning>().Configure(
+            player,
+            enemyPool,
+            experiencePool,
+            warningDuration);
     }
 
     private Vector3 ChooseSpawnPosition()
     {
-        Vector2 center = mainCamera.transform.position;
-        float halfHeight = Mathf.Max(0.1f, mainCamera.orthographicSize - edgePadding);
-        float halfWidth = Mathf.Max(0.1f, mainCamera.orthographicSize * mainCamera.aspect - edgePadding);
+        Vector2 min = arenaBounds.Minimum + Vector2.one * arenaPadding;
+        Vector2 max = arenaBounds.Maximum - Vector2.one * arenaPadding;
         float minimumDistanceSqr = minimumDistanceFromPlayer * minimumDistanceFromPlayer;
+
         for (int attempt = 0; attempt < positionAttempts; attempt++)
         {
-            Vector2 candidate = RandomPointOnPerimeter(center, halfWidth, halfHeight);
+            Vector2 candidate = new Vector2(
+                Random.Range(min.x, max.x),
+                Random.Range(min.y, max.y));
+
             if ((candidate - (Vector2)player.position).sqrMagnitude >= minimumDistanceSqr)
             {
                 return candidate;
             }
         }
-        
-        float fallbackX = player.position.x < center.x ? center.x + halfWidth : center.x - halfWidth;
-        float fallbackY = player.position.y < center.y ? center.y + halfHeight : center.y - halfHeight;
-        return new Vector3(fallbackX, fallbackY, 0f);
+
+        return ChooseFarthestCorner(min, max);
     }
 
-    private static Vector2 RandomPointOnPerimeter(Vector2 center, float halfWidth, float halfHeight)
+    private Vector2 ChooseFarthestCorner(Vector2 min, Vector2 max)
     {
-        switch (Random.Range(0, 4))
+        Vector2[] corners =
         {
-            case 0:
-                return new Vector2(center.x - halfWidth, Random.Range(center.y - halfHeight, center.y + halfHeight));
-            case 1:
-                return new Vector2(center.x + halfWidth, Random.Range(center.y - halfHeight, center.y + halfHeight));
-            case 2:
-                return new Vector2(Random.Range(center.x - halfWidth, center.x + halfWidth), center.y - halfHeight);
-            default:
-                return new Vector2(Random.Range(center.x - halfWidth, center.x + halfWidth), center.y + halfHeight);
+            new Vector2(min.x, min.y),
+            new Vector2(min.x, max.y),
+            new Vector2(max.x, min.y),
+            new Vector2(max.x, max.y)
+        };
+
+        Vector2 farthest = corners[0];
+        float farthestDistanceSqr = (farthest - (Vector2)player.position).sqrMagnitude;
+
+        for (int i = 1; i < corners.Length; i++)
+        {
+            float distanceSqr = (corners[i] - (Vector2)player.position).sqrMagnitude;
+            if (distanceSqr > farthestDistanceSqr)
+            {
+                farthest = corners[i];
+                farthestDistanceSqr = distanceSqr;
+            }
         }
+
+        return farthest;
     }
 }
