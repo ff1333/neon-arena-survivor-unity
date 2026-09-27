@@ -5,6 +5,7 @@ public class PlayerUpgradeApplier : MonoBehaviour
     [SerializeField] private PlayerMovement movement;
     [SerializeField] private PlayerShooter shooter;
     [SerializeField] private Health health;
+    [SerializeField] private PlayerPickupRange pickupRange;
 
     public bool CanApply(PlayerUpgradeData data)
     {
@@ -15,12 +16,22 @@ public class PlayerUpgradeApplier : MonoBehaviour
 
         switch (data.EffectType)
         {
-            case UpgradeEffectType.EquipWeapon:
-                return shooter.CanEquip(data.Weapon);
+            case UpgradeEffectType.Damage:
+                return shooter.CanIncreaseDamage;
+            case UpgradeEffectType.FireRate:
+                return shooter.CanIncreaseAttackSpeed;
             case UpgradeEffectType.Heal:
+                return !health.IsDead && !health.IsFull;
             case UpgradeEffectType.MoveSpeed:
+                return movement.CanIncreaseMoveSpeed;
             case UpgradeEffectType.MaxHealth:
                 return true;
+            case UpgradeEffectType.AttackRange:
+                return shooter.CanIncreaseRange;
+            case UpgradeEffectType.PickupRange:
+                return pickupRange.CanIncrease;
+            case UpgradeEffectType.EquipWeapon:
+                return shooter.CanEquip(data.Weapon);
             default:
                 return false;
         }
@@ -30,8 +41,11 @@ public class PlayerUpgradeApplier : MonoBehaviour
     {
         switch (data.EffectType)
         {
-            case UpgradeEffectType.EquipWeapon:
-                shooter.EquipWeapon(data.Weapon);
+            case UpgradeEffectType.Damage:
+                shooter.AddDamageMultiplier(data.Value);
+                break;
+            case UpgradeEffectType.FireRate:
+                shooter.AddAttackSpeedMultiplier(data.Value);
                 break;
             case UpgradeEffectType.Heal:
                 health.Heal(data.Value);
@@ -41,6 +55,15 @@ public class PlayerUpgradeApplier : MonoBehaviour
                 break;
             case UpgradeEffectType.MaxHealth:
                 health.AddMaxHealth(data.Value);
+                break;
+            case UpgradeEffectType.AttackRange:
+                shooter.AddRangeMultiplier(data.Value);
+                break;
+            case UpgradeEffectType.PickupRange:
+                pickupRange.AddRadius(data.Value);
+                break;
+            case UpgradeEffectType.EquipWeapon:
+                shooter.EquipWeapon(data.Weapon);
                 break;
         }
     }

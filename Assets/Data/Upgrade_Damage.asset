@@ -12,7 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 55a366aa722e7e04fb00165064058035, type: 3}
   m_Name: Upgrade_Damage
   m_EditorClassIdentifier: Assembly-CSharp::PlayerUpgradeData
-  title: Damage +5
-  description: Projectile damage increases by 5.
+  title: Global damage +12%
+  description: All equipped weapons deal 12% more damage.
   effectType: 0
-  value: 5
+  value: 0.12
+  weapon: {fileID: 0}

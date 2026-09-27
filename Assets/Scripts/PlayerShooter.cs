@@ -20,13 +20,41 @@ public class PlayerShooter : MonoBehaviour
     [SerializeField, Min(0.02f)] private float idleScanInterval = 0.1f;
     [SerializeField, Range(1, 2)] private int maximumCopiesPerType = 2;
 
+    [Header("Global Upgrades")]
+    [SerializeField, Min(1f)] private float damageMultiplier = 1f;
+    [SerializeField, Min(1f)] private float maximumDamageMultiplier = 2f;
+    [SerializeField, Min(1f)] private float rangeMultiplier = 1f;
+    [SerializeField, Min(1f)] private float maximumRangeMultiplier = 1.5f;
+    [SerializeField, Min(1f)] private float attackSpeedMultiplier = 1f;
+    [SerializeField, Min(1f)] private float maximumAttackSpeedMultiplier = 2f;
+
     private readonly List<EquippedWeapon> equippedWeapons =
         new List<EquippedWeapon>(6);
 
     public int EquippedCount => equippedWeapons.Count;
+    public float DamageMultiplier => damageMultiplier;
+    public float RangeMultiplier => rangeMultiplier;
+    public float AttackSpeedMultiplier => attackSpeedMultiplier;
+    public bool CanIncreaseDamage =>
+        damageMultiplier < maximumDamageMultiplier - 0.001f;
+    public bool CanIncreaseRange =>
+        rangeMultiplier < maximumRangeMultiplier - 0.001f;
+    public bool CanIncreaseAttackSpeed =>
+        attackSpeedMultiplier < maximumAttackSpeedMultiplier - 0.001f;
 
     private void Awake()
     {
+        maximumDamageMultiplier = Mathf.Max(1f, maximumDamageMultiplier);
+        maximumRangeMultiplier = Mathf.Max(1f, maximumRangeMultiplier);
+        maximumAttackSpeedMultiplier =
+            Mathf.Max(1f, maximumAttackSpeedMultiplier);
+        damageMultiplier = Mathf.Clamp(
+            damageMultiplier, 1f, maximumDamageMultiplier);
+        rangeMultiplier = Mathf.Clamp(
+            rangeMultiplier, 1f, maximumRangeMultiplier);
+        attackSpeedMultiplier = Mathf.Clamp(
+            attackSpeedMultiplier, 1f, maximumAttackSpeedMultiplier);
+
         if (projectilePool == null || startingWeapon == null ||
             weaponSlots == null || weaponSlots.Length != 6)
         {
@@ -42,7 +70,9 @@ public class PlayerShooter : MonoBehaviour
             if (weaponSlots[i] == null ||
                 !weaponSlots[i].TryGetComponent(out SpriteRenderer slotRenderer))
             {
-                Debug.LogError($"Weapon slot {i} requires a SpriteRenderer.", this);
+                Debug.LogError(
+                    $"Weapon slot {i} requires a SpriteRenderer.",
+                    this);
                 enabled = false;
                 return;
             }
@@ -63,9 +93,11 @@ public class PlayerShooter : MonoBehaviour
                 continue;
             }
 
+            float effectiveRange =
+                weapon.Definition.Range * rangeMultiplier;
             EnemyController target = TargetSelector.FindPriorityTarget(
                 weapon.Slot.position,
-                weapon.Definition.Range,
+                effectiveRange,
                 priorityBandWidth);
 
             if (target == null)
@@ -83,9 +115,12 @@ public class PlayerShooter : MonoBehaviour
                 Quaternion.identity);
             projectileObject.GetComponent<Projectile>().Fire(
                 direction,
-                weapon.Definition);
+                weapon.Definition,
+                damageMultiplier,
+                rangeMultiplier);
 
-            weapon.NextFireTime = Time.time + weapon.Definition.FireInterval;
+            weapon.NextFireTime = Time.time +
+                weapon.Definition.FireInterval / attackSpeedMultiplier;
         }
     }
 
@@ -114,7 +149,8 @@ public class PlayerShooter : MonoBehaviour
         {
             Definition = definition,
             Slot = slot,
-            NextFireTime = Time.time + definition.FireInterval
+            NextFireTime = Time.time +
+                definition.FireInterval / attackSpeedMultiplier
         });
 
         return true;
@@ -133,5 +169,41 @@ public class PlayerShooter : MonoBehaviour
         }
 
         return count;
+    }
+
+    public void AddDamageMultiplier(float amount)
+    {
+        if (amount <= 0f)
+        {
+            return;
+        }
+
+        damageMultiplier = Mathf.Min(
+            maximumDamageMultiplier,
+            damageMultiplier + amount);
+    }
+
+    public void AddRangeMultiplier(float amount)
+    {
+        if (amount <= 0f)
+        {
+            return;
+        }
+
+        rangeMultiplier = Mathf.Min(
+            maximumRangeMultiplier,
+            rangeMultiplier + amount);
+    }
+
+    public void AddAttackSpeedMultiplier(float amount)
+    {
+        if (amount <= 0f)
+        {
+            return;
+        }
+
+        attackSpeedMultiplier = Mathf.Min(
+            maximumAttackSpeedMultiplier,
+            attackSpeedMultiplier + amount);
     }
 }
