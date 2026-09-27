@@ -16,6 +16,7 @@ public class EnemyController : MonoBehaviour
     private bool hasHitPlayer;
 
     public static event Action DiedGlobally;
+    public Health Health => health;
 
     private void Awake()
     {
@@ -30,10 +31,18 @@ public class EnemyController : MonoBehaviour
     {
         hasHitPlayer = false;
         health.RestoreFull();
+        EnemyRegistry.Register(this);
+    }
+
+    private void OnDisable()
+    {
+        EnemyRegistry.Unregister(this);
     }
 
     private void OnDestroy()
     {
+        EnemyRegistry.Unregister(this);
+
         if (health != null)
         {
             health.Died -= HandleDied;
@@ -85,7 +94,9 @@ public class EnemyController : MonoBehaviour
     {
         if (experiencePool != null)
         {
-            GameObject pickupObject = experiencePool.Get(transform.position, Quaternion.identity);
+            GameObject pickupObject = experiencePool.Get(
+                transform.position,
+                Quaternion.identity);
             pickupObject.GetComponent<ExperiencePickup>().Configure(1);
         }
 

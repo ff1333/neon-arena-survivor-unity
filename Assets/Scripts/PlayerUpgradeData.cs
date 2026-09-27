@@ -7,11 +7,11 @@ public class PlayerUpgradeData : ScriptableObject
     [SerializeField, TextArea] private string description;
     [SerializeField] private UpgradeEffectType effectType;
     [SerializeField] private float value;
-    
+    [SerializeField] private WeaponDefinition weapon;
+
     public string Title => title;
     public string Description => description;
     public UpgradeEffectType EffectType => effectType;
-
     public float Value => value;
-}   
-    
+    public WeaponDefinition Weapon => weapon;
+}
