@@ -12,6 +12,7 @@ public class EnemyController : MonoBehaviour
     private Health health;
     private PoolMember poolMember;
     private GameObjectPool experiencePool;
+    private CameraFollow cameraFollow;
     private bool hasHitPlayer;
 
     public static event Action DiedGlobally;
@@ -22,6 +23,7 @@ public class EnemyController : MonoBehaviour
         health = GetComponent<Health>();
         poolMember = GetComponent<PoolMember>();
         health.Died += HandleDied;
+        FindCameraFeedback();
     }
 
     private void OnEnable()
@@ -70,6 +72,12 @@ public class EnemyController : MonoBehaviour
 
         hasHitPlayer = true;
         playerHealth.TakeDamage(contactDamage);
+
+        if (!playerHealth.IsDead)
+        {
+            ShakeCamera(1.8f);
+        }
+
         poolMember.Release();
     }
 
@@ -83,5 +91,23 @@ public class EnemyController : MonoBehaviour
 
         DiedGlobally?.Invoke();
         poolMember.Release();
+    }
+
+    private void FindCameraFeedback()
+    {
+        Camera mainCamera = Camera.main;
+        cameraFollow = mainCamera != null
+            ? mainCamera.GetComponent<CameraFollow>()
+            : null;
+    }
+
+    private void ShakeCamera(float strengthMultiplier)
+    {
+        if (cameraFollow == null)
+        {
+            FindCameraFeedback();
+        }
+
+        cameraFollow?.Shake(strengthMultiplier);
     }
 }
