@@ -12,7 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 55a366aa722e7e04fb00165064058035, type: 3}
   m_Name: Upgrade_FireRate
   m_EditorClassIdentifier: Assembly-CSharp::PlayerUpgradeData
-  title: Fire rate +
-  description: Projectile fire-rate increases by 0.05.
+  title: Global fire rate +10%
+  description: All equipped weapons fire 10% faster.
   effectType: 1
-  value: 0.05
+  value: 0.1
+  weapon: {fileID: 0}

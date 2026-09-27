@@ -7,5 +7,6 @@ public enum UpgradeEffectType
     MaxHealth = 4,
     AttackRange = 5,
     ProjectileCount = 6,
-    EquipWeapon = 7
+    EquipWeapon = 7,
+    PickupRange = 8
 }

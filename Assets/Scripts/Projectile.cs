@@ -36,7 +36,11 @@ public class Projectile : MonoBehaviour
         spriteRenderer.color = defaultColor;
     }
 
-    public void Fire(Vector2 newDirection, WeaponDefinition weapon)
+    public void Fire(
+        Vector2 newDirection,
+        WeaponDefinition weapon,
+        float damageMultiplier,
+        float rangeMultiplier)
     {
         if (weapon == null)
         {
@@ -47,8 +51,8 @@ public class Projectile : MonoBehaviour
 
         direction = newDirection.normalized;
         speed = weapon.ProjectileSpeed;
-        damage = weapon.Damage;
-        remainingDistance = weapon.Range;
+        damage = weapon.Damage * Mathf.Max(1f, damageMultiplier);
+        remainingDistance = weapon.Range * Mathf.Max(1f, rangeMultiplier);
         releaseTime = Time.time + lifeTime;
 
         spriteRenderer.sprite = weapon.ProjectileSprite;

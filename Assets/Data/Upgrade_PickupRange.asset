@@ -10,10 +10,10 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 55a366aa722e7e04fb00165064058035, type: 3}
-  m_Name: Upgrade_AttackRange
+  m_Name: Upgrade_PickupRange
   m_EditorClassIdentifier: Assembly-CSharp::PlayerUpgradeData
-  title: Global range +8%
-  description: All equipped weapons gain 8% attack range.
-  effectType: 5
-  value: 0.08
+  title: Pickup range +0.5
+  description: Experience attraction radius increases by 0.5.
+  effectType: 8
+  value: 0.5
   weapon: {fileID: 0}

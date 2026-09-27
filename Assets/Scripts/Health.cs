@@ -8,6 +8,7 @@ public class Health : MonoBehaviour
     public float Current { get; private set; }
     public float Max => maxHealth;
     public bool IsDead => Current <= 0f;
+    public bool IsFull => Current >= maxHealth - 0.01f;
 
     public event Action<float, float> Changed;
     public event Action Died;
@@ -26,10 +27,14 @@ public class Health : MonoBehaviour
 
     public void TakeDamage(float amount)
     {
-        if (IsDead || amount <= 0f) return;
-        
+        if (IsDead || amount <= 0f)
+        {
+            return;
+        }
+
         Current = Mathf.Max(0f, Current - amount);
         Changed?.Invoke(Current, maxHealth);
+
         if (IsDead)
         {
             Died?.Invoke();
@@ -44,7 +49,7 @@ public class Health : MonoBehaviour
 
     public void Heal(float amount)
     {
-        if (IsDead || amount <= 0f)
+        if (IsDead || IsFull || amount <= 0f)
         {
             return;
         }
@@ -56,7 +61,7 @@ public class Health : MonoBehaviour
     public void AddMaxHealth(float amount)
     {
         if (amount <= 0f)
-        { 
+        {
             return;
         }
 

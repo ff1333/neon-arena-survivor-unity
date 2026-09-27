@@ -5,6 +5,8 @@ using UnityEngine.UI;
 
 public class UpgradeController : MonoBehaviour
 {
+    private const float ChoiceSpacing = 110f;
+
     [SerializeField] private PlayerProgress progress;
     [SerializeField] private PlayerUpgradeApplier applier;
     [SerializeField] private GameObject upgradePanel;
@@ -41,7 +43,8 @@ public class UpgradeController : MonoBehaviour
 
     private void ShowChoices()
     {
-        if (buttons.Length != 3 || labels.Length != 3 || weaponIcons.Length != 3)
+        if (buttons.Length != 3 || labels.Length != 3 ||
+            weaponIcons.Length != 3)
         {
             Debug.LogError(
                 "UpgradeController requires exactly 3 buttons, labels and icons.",
@@ -79,17 +82,26 @@ public class UpgradeController : MonoBehaviour
 
         AddRandomChoices(utilities, choices, 3);
 
-        if (choices.Count != 3)
+        if (choices.Count == 0)
         {
-            Debug.LogError("Not enough eligible upgrades to create 3 choices.", this);
+            Debug.LogError("No eligible upgrades are available.", this);
             return;
         }
 
+        LayoutVisibleButtons(choices.Count);
+
         for (int i = 0; i < currentChoices.Length; i++)
         {
-            PlayerUpgradeData choice = choices[i];
-            currentChoices[i] = choice;
+            bool hasChoice = i < choices.Count;
+            buttons[i].gameObject.SetActive(hasChoice);
+            currentChoices[i] = hasChoice ? choices[i] : null;
 
+            if (!hasChoice)
+            {
+                continue;
+            }
+
+            PlayerUpgradeData choice = currentChoices[i];
             bool isWeapon = choice.EffectType == UpgradeEffectType.EquipWeapon;
             weaponIcons[i].gameObject.SetActive(isWeapon);
 
@@ -104,13 +116,27 @@ public class UpgradeController : MonoBehaviour
             }
             else
             {
-                labels[i].text = $"{choice.Title}\n{choice.Description}";
+                labels[i].text =
+                    $"{choice.Title}\n{choice.Description}";
             }
         }
 
         upgradePanel.transform.SetAsLastSibling();
         upgradePanel.SetActive(true);
         Time.timeScale = 0f;
+    }
+
+    private void LayoutVisibleButtons(int visibleCount)
+    {
+        float startY = (visibleCount - 1) * ChoiceSpacing * 0.5f;
+
+        for (int i = 0; i < visibleCount; i++)
+        {
+            RectTransform rect = buttons[i].GetComponent<RectTransform>();
+            Vector2 position = rect.anchoredPosition;
+            position.y = startY - i * ChoiceSpacing;
+            rect.anchoredPosition = position;
+        }
     }
 
     private static void AddRandomChoices(
@@ -128,7 +154,8 @@ public class UpgradeController : MonoBehaviour
 
     private void Select(int index)
     {
-        if (!IsOpen || index < 0 || index >= currentChoices.Length)
+        if (!IsOpen || index < 0 || index >= currentChoices.Length ||
+            currentChoices[index] == null)
         {
             return;
         }
