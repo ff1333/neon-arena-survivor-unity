@@ -1,156 +1,137 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 public class PlayerShooter : MonoBehaviour
 {
-    [Header("Projectile")]
+    private sealed class EquippedWeapon
+    {
+        public WeaponDefinition Definition;
+        public Transform Slot;
+        public float NextFireTime;
+    }
+
+    [Header("References")]
     [SerializeField] private GameObjectPool projectilePool;
-    [SerializeField] private float fireInterval = 0.4f;
-    [SerializeField] private float projectileSpeed = 12f;
-    [SerializeField] private float damage = 25f;
+    [SerializeField] private WeaponDefinition startingWeapon;
+    [SerializeField] private Transform[] weaponSlots;
 
     [Header("Targeting")]
-    [SerializeField, Min(0.5f)] private float range = 3f;
-    [SerializeField, Min(0.5f)] private float maximumRange = 4.5f;
     [SerializeField, Min(0f)] private float priorityBandWidth = 1.5f;
+    [SerializeField, Min(0.02f)] private float idleScanInterval = 0.1f;
+    [SerializeField, Range(1, 2)] private int maximumCopiesPerType = 2;
 
-    [Header("Multishot")]
-    [SerializeField, Range(1, 5)] private int projectileCount = 1;
-    [SerializeField, Range(1, 5)] private int maximumProjectileCount = 5;
-    [SerializeField, Min(0f)] private float spreadAngle = 12f;
+    private readonly List<EquippedWeapon> equippedWeapons =
+        new List<EquippedWeapon>(6);
 
-    private Camera mainCamera;
-    private float nextFireTime;
-
-    public bool CanIncreaseRange => range < maximumRange - 0.001f;
-    public bool CanIncreaseProjectileCount => projectileCount < maximumProjectileCount;
+    public int EquippedCount => equippedWeapons.Count;
 
     private void Awake()
     {
-        mainCamera = Camera.main;
-        if (mainCamera == null)
+        if (projectilePool == null || startingWeapon == null ||
+            weaponSlots == null || weaponSlots.Length != 6)
         {
-            Debug.LogError("PlayerShooter requires a Main Camera.", this);
+            Debug.LogError(
+                "PlayerShooter requires a projectile pool, starting weapon and 6 slots.",
+                this);
+            enabled = false;
+            return;
         }
+
+        for (int i = 0; i < weaponSlots.Length; i++)
+        {
+            if (weaponSlots[i] == null ||
+                !weaponSlots[i].TryGetComponent(out SpriteRenderer slotRenderer))
+            {
+                Debug.LogError($"Weapon slot {i} requires a SpriteRenderer.", this);
+                enabled = false;
+                return;
+            }
+
+            slotRenderer.enabled = false;
+        }
+
+        EquipWeapon(startingWeapon);
     }
 
     private void Update()
     {
-        if (Time.time < nextFireTime)
+        for (int i = 0; i < equippedWeapons.Count; i++)
         {
-            return;
-        }
+            EquippedWeapon weapon = equippedWeapons[i];
+            if (Time.time < weapon.NextFireTime)
+            {
+                continue;
+            }
 
-        GameObject target = FindPriorityTarget();
-        if (target == null)
-        {
-            return;
-        }
+            EnemyController target = TargetSelector.FindPriorityTarget(
+                weapon.Slot.position,
+                weapon.Definition.Range,
+                priorityBandWidth);
 
-        nextFireTime = Time.time + fireInterval;
-        Vector2 baseDirection = target.transform.position - transform.position;
-        FireVolley(baseDirection.normalized);
+            if (target == null)
+            {
+                weapon.NextFireTime = Time.time + idleScanInterval;
+                continue;
+            }
+
+            Vector2 direction =
+                (target.transform.position - weapon.Slot.position).normalized;
+            weapon.Slot.right = direction;
+
+            GameObject projectileObject = projectilePool.Get(
+                weapon.Slot.position,
+                Quaternion.identity);
+            projectileObject.GetComponent<Projectile>().Fire(
+                direction,
+                weapon.Definition);
+
+            weapon.NextFireTime = Time.time + weapon.Definition.FireInterval;
+        }
     }
 
-    private GameObject FindPriorityTarget()
+    public bool CanEquip(WeaponDefinition definition)
     {
-        GameObject[] enemies = GameObject.FindGameObjectsWithTag("Enemy");
-        float rangeSqr = range * range;
-        float nearestDistanceSqr = float.PositiveInfinity;
-
-        foreach (GameObject enemy in enemies)
-        {
-            if (!enemy.TryGetComponent(out Health _) || !IsInsideCamera(enemy.transform.position))
-            {
-                continue;
-            }
-
-            float distanceSqr = (enemy.transform.position - transform.position).sqrMagnitude;
-            if (distanceSqr <= rangeSqr && distanceSqr < nearestDistanceSqr)
-            {
-                nearestDistanceSqr = distanceSqr;
-            }
-        }
-
-        if (float.IsPositiveInfinity(nearestDistanceSqr))
-        {
-            return null;
-        }
-
-        float bandLimit = Mathf.Sqrt(nearestDistanceSqr) + priorityBandWidth;
-        float bandLimitSqr = Mathf.Min(rangeSqr, bandLimit * bandLimit);
-        GameObject bestTarget = null;
-        float lowestHealth = float.PositiveInfinity;
-        float bestDistanceSqr = float.PositiveInfinity;
-
-        foreach (GameObject enemy in enemies)
-        {
-            if (!enemy.TryGetComponent(out Health health) || !IsInsideCamera(enemy.transform.position))
-            {
-                continue;
-            }
-
-            float distanceSqr = (enemy.transform.position - transform.position).sqrMagnitude;
-            if (distanceSqr > bandLimitSqr)
-            {
-                continue;
-            }
-
-            if (health.Current < lowestHealth ||
-                (Mathf.Approximately(health.Current, lowestHealth) && distanceSqr < bestDistanceSqr))
-            {
-                bestTarget = enemy;
-                lowestHealth = health.Current;
-                bestDistanceSqr = distanceSqr;
-            }
-        }
-
-        return bestTarget;
+        return definition != null &&
+               equippedWeapons.Count < weaponSlots.Length &&
+               GetEquippedCount(definition.WeaponType) < maximumCopiesPerType;
     }
 
-    private bool IsInsideCamera(Vector3 worldPosition)
+    public bool EquipWeapon(WeaponDefinition definition)
     {
-        if (mainCamera == null)
+        if (!CanEquip(definition))
         {
             return false;
         }
 
-        Vector3 viewport = mainCamera.WorldToViewportPoint(worldPosition);
-        return viewport.z > 0f &&
-               viewport.x >= 0f && viewport.x <= 1f &&
-               viewport.y >= 0f && viewport.y <= 1f;
-    }
+        int slotIndex = equippedWeapons.Count;
+        Transform slot = weaponSlots[slotIndex];
+        SpriteRenderer slotRenderer = slot.GetComponent<SpriteRenderer>();
+        slotRenderer.sprite = definition.Icon;
+        slotRenderer.color = definition.DisplayColor;
+        slotRenderer.enabled = true;
 
-    private void FireVolley(Vector2 baseDirection)
-    {
-        for (int index = 0; index < projectileCount; index++)
+        equippedWeapons.Add(new EquippedWeapon
         {
-            float offset = (index - (projectileCount - 1) * 0.5f) * spreadAngle;
-            Vector3 rotated = Quaternion.Euler(0f, 0f, offset) * (Vector3)baseDirection;
-            GameObject projectileObject = projectilePool.Get(transform.position, Quaternion.identity);
-            projectileObject.GetComponent<Projectile>().Fire(rotated, projectileSpeed, damage);
+            Definition = definition,
+            Slot = slot,
+            NextFireTime = Time.time + definition.FireInterval
+        });
+
+        return true;
+    }
+
+    public int GetEquippedCount(WeaponType weaponType)
+    {
+        int count = 0;
+
+        for (int i = 0; i < equippedWeapons.Count; i++)
+        {
+            if (equippedWeapons[i].Definition.WeaponType == weaponType)
+            {
+                count++;
+            }
         }
-    }
 
-    public void AddDamage(float amount)
-    {
-        damage = Mathf.Max(1f, damage + amount);
-    }
-
-    public void ReduceFireInterval(float amount)
-    {
-        fireInterval = Mathf.Max(0.08f, fireInterval - amount);
-    }
-
-    public void AddRange(float amount)
-    {
-        range = Mathf.Clamp(range + amount, 0.5f, maximumRange);
-    }
-
-    public void AddProjectileCount(int amount)
-    {
-        projectileCount = Mathf.Clamp(
-            projectileCount + Mathf.Max(0, amount),
-            1,
-            maximumProjectileCount);
+        return count;
     }
 }

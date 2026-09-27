@@ -1,59 +1,79 @@
 using UnityEngine;
 
-[RequireComponent(typeof(PoolMember))]
+[RequireComponent(typeof(SpriteRenderer), typeof(PoolMember))]
 public class Projectile : MonoBehaviour
 {
-    [SerializeField] private float lifeTime = 2f;
-    [SerializeField, Min(0f)] private float viewportMargin = 0.02f;
+    [SerializeField, Min(0.1f)] private float lifeTime = 2f;
 
-    private Camera mainCamera;
+    private SpriteRenderer spriteRenderer;
     private CameraFollow cameraFollow;
     private PoolMember poolMember;
+    private Sprite defaultSprite;
+    private Color defaultColor;
     private Vector2 direction;
     private float speed;
     private float damage;
+    private float remainingDistance;
     private float releaseTime;
 
     private void Awake()
     {
+        spriteRenderer = GetComponent<SpriteRenderer>();
         poolMember = GetComponent<PoolMember>();
+        defaultSprite = spriteRenderer.sprite;
+        defaultColor = spriteRenderer.color;
         FindCameraFeedback();
     }
 
-    public void Fire(Vector2 newDirection, float newSpeed, float newDamage)
+    private void OnDisable()
     {
+        if (spriteRenderer == null)
+        {
+            return;
+        }
+
+        spriteRenderer.sprite = defaultSprite;
+        spriteRenderer.color = defaultColor;
+    }
+
+    public void Fire(Vector2 newDirection, WeaponDefinition weapon)
+    {
+        if (weapon == null)
+        {
+            Debug.LogError("Projectile requires a weapon definition.", this);
+            poolMember.Release();
+            return;
+        }
+
         direction = newDirection.normalized;
-        speed = newSpeed;
-        damage = newDamage;
+        speed = weapon.ProjectileSpeed;
+        damage = weapon.Damage;
+        remainingDistance = weapon.Range;
         releaseTime = Time.time + lifeTime;
+
+        spriteRenderer.sprite = weapon.ProjectileSprite;
+        spriteRenderer.color = weapon.DisplayColor;
+        transform.right = direction;
     }
 
     private void Update()
     {
-        transform.position += (Vector3)(direction * speed * Time.deltaTime);
+        if (remainingDistance <= 0f || Time.time >= releaseTime)
+        {
+            poolMember.Release();
+            return;
+        }
 
-        if (Time.time >= releaseTime || IsOutsideCamera())
+        float moveDistance = Mathf.Min(
+            speed * Time.deltaTime,
+            remainingDistance);
+        transform.position += (Vector3)(direction * moveDistance);
+        remainingDistance -= moveDistance;
+
+        if (remainingDistance <= 0.0001f || Time.time >= releaseTime)
         {
             poolMember.Release();
         }
-    }
-
-    private bool IsOutsideCamera()
-    {
-        if (mainCamera == null)
-        {
-            FindCameraFeedback();
-        }
-
-        if (mainCamera == null)
-        {
-            return false;
-        }
-
-        Vector3 viewportPosition = mainCamera.WorldToViewportPoint(transform.position);
-        return viewportPosition.z < 0f ||
-               viewportPosition.x < -viewportMargin || viewportPosition.x > 1f + viewportMargin ||
-               viewportPosition.y < -viewportMargin || viewportPosition.y > 1f + viewportMargin;
     }
 
     private void OnTriggerEnter2D(Collider2D other)
@@ -79,7 +99,7 @@ public class Projectile : MonoBehaviour
 
     private void FindCameraFeedback()
     {
-        mainCamera = Camera.main;
+        Camera mainCamera = Camera.main;
         cameraFollow = mainCamera != null
             ? mainCamera.GetComponent<CameraFollow>()
             : null;

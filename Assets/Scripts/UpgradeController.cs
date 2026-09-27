@@ -10,9 +10,11 @@ public class UpgradeController : MonoBehaviour
     [SerializeField] private GameObject upgradePanel;
     [SerializeField] private Button[] buttons;
     [SerializeField] private TMP_Text[] labels;
+    [SerializeField] private Image[] weaponIcons;
     [SerializeField] private PlayerUpgradeData[] availableUpgrades;
 
-    private readonly PlayerUpgradeData[] currentChoices = new PlayerUpgradeData[3];
+    private readonly PlayerUpgradeData[] currentChoices =
+        new PlayerUpgradeData[3];
 
     public bool IsOpen => upgradePanel != null && upgradePanel.activeSelf;
 
@@ -39,60 +41,89 @@ public class UpgradeController : MonoBehaviour
 
     private void ShowChoices()
     {
-        if (buttons.Length != 3 || labels.Length != 3)
+        if (buttons.Length != 3 || labels.Length != 3 || weaponIcons.Length != 3)
         {
-            Debug.LogError("UpgradeController requires exactly 3 buttons and 3 labels.", this);
+            Debug.LogError(
+                "UpgradeController requires exactly 3 buttons, labels and icons.",
+                this);
             return;
         }
 
-        List<PlayerUpgradeData> remaining = new List<PlayerUpgradeData>();
-        PlayerUpgradeData guaranteedProjectileUpgrade = null;
+        List<PlayerUpgradeData> weapons = new List<PlayerUpgradeData>();
+        List<PlayerUpgradeData> utilities = new List<PlayerUpgradeData>();
 
         foreach (PlayerUpgradeData upgrade in availableUpgrades)
         {
-            if (!applier.CanApply(upgrade, progress.Level))
+            if (!applier.CanApply(upgrade))
             {
                 continue;
             }
 
-            if (upgrade.EffectType == UpgradeEffectType.ProjectileCount)
+            if (upgrade.EffectType == UpgradeEffectType.EquipWeapon)
             {
-                guaranteedProjectileUpgrade = upgrade;
+                weapons.Add(upgrade);
             }
             else
             {
-                remaining.Add(upgrade);
+                utilities.Add(upgrade);
             }
         }
 
-        int guaranteedSlot = guaranteedProjectileUpgrade != null ? Random.Range(0, 3) : -1;
-        int randomChoicesNeeded = guaranteedProjectileUpgrade != null ? 2 : 3;
+        List<PlayerUpgradeData> choices = new List<PlayerUpgradeData>(3);
+        bool isWeaponLevel = progress.Level % 3 == 0;
 
-        if (remaining.Count < randomChoicesNeeded)
+        if (isWeaponLevel)
+        {
+            AddRandomChoices(weapons, choices, 3);
+        }
+
+        AddRandomChoices(utilities, choices, 3);
+
+        if (choices.Count != 3)
         {
             Debug.LogError("Not enough eligible upgrades to create 3 choices.", this);
             return;
         }
 
-        for (int i = 0; i < 3; i++)
+        for (int i = 0; i < currentChoices.Length; i++)
         {
-            if (i == guaranteedSlot)
+            PlayerUpgradeData choice = choices[i];
+            currentChoices[i] = choice;
+
+            bool isWeapon = choice.EffectType == UpgradeEffectType.EquipWeapon;
+            weaponIcons[i].gameObject.SetActive(isWeapon);
+
+            if (isWeapon)
             {
-                currentChoices[i] = guaranteedProjectileUpgrade;
+                WeaponDefinition weapon = choice.Weapon;
+                weaponIcons[i].sprite = weapon.Icon;
+                weaponIcons[i].color = weapon.DisplayColor;
+                int count = applier.GetWeaponCount(choice);
+                labels[i].text =
+                    $"{choice.Title}  {count}/2\n{choice.Description}";
             }
             else
             {
-                int randomIndex = Random.Range(0, remaining.Count);
-                currentChoices[i] = remaining[randomIndex];
-                remaining.RemoveAt(randomIndex);
+                labels[i].text = $"{choice.Title}\n{choice.Description}";
             }
-
-            labels[i].text = $"{currentChoices[i].Title}\n{currentChoices[i].Description}";
         }
 
         upgradePanel.transform.SetAsLastSibling();
         upgradePanel.SetActive(true);
         Time.timeScale = 0f;
+    }
+
+    private static void AddRandomChoices(
+        List<PlayerUpgradeData> source,
+        List<PlayerUpgradeData> destination,
+        int targetCount)
+    {
+        while (source.Count > 0 && destination.Count < targetCount)
+        {
+            int randomIndex = Random.Range(0, source.Count);
+            destination.Add(source[randomIndex]);
+            source.RemoveAt(randomIndex);
+        }
     }
 
     private void Select(int index)

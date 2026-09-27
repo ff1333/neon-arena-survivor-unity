@@ -44,4 +44,17 @@ public class PlayerProgress : MonoBehaviour
 
         ExperienceChanged?.Invoke(Experience, ExperienceToNextLevel);
     }
+
+#if UNITY_EDITOR
+    [ContextMenu("Debug/Add One Level")]
+    private void DebugAddOneLevel()
+    {
+        if (!Application.isPlaying)
+        {
+            return;
+        }
+
+        AddExperience(ExperienceToNextLevel - Experience);
+    }
+#endif
 }

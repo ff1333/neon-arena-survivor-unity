@@ -6,7 +6,7 @@ public class PlayerUpgradeApplier : MonoBehaviour
     [SerializeField] private PlayerShooter shooter;
     [SerializeField] private Health health;
 
-    public bool CanApply(PlayerUpgradeData data, int level)
+    public bool CanApply(PlayerUpgradeData data)
     {
         if (data == null)
         {
@@ -15,12 +15,14 @@ public class PlayerUpgradeApplier : MonoBehaviour
 
         switch (data.EffectType)
         {
-            case UpgradeEffectType.AttackRange:
-                return shooter.CanIncreaseRange;
-            case UpgradeEffectType.ProjectileCount:
-                return level % 3 == 0 && shooter.CanIncreaseProjectileCount;
-            default:
+            case UpgradeEffectType.EquipWeapon:
+                return shooter.CanEquip(data.Weapon);
+            case UpgradeEffectType.Heal:
+            case UpgradeEffectType.MoveSpeed:
+            case UpgradeEffectType.MaxHealth:
                 return true;
+            default:
+                return false;
         }
     }
 
@@ -28,11 +30,8 @@ public class PlayerUpgradeApplier : MonoBehaviour
     {
         switch (data.EffectType)
         {
-            case UpgradeEffectType.Damage:
-                shooter.AddDamage(data.Value);
-                break;
-            case UpgradeEffectType.FireRate:
-                shooter.ReduceFireInterval(data.Value);
+            case UpgradeEffectType.EquipWeapon:
+                shooter.EquipWeapon(data.Weapon);
                 break;
             case UpgradeEffectType.Heal:
                 health.Heal(data.Value);
@@ -43,12 +42,13 @@ public class PlayerUpgradeApplier : MonoBehaviour
             case UpgradeEffectType.MaxHealth:
                 health.AddMaxHealth(data.Value);
                 break;
-            case UpgradeEffectType.AttackRange:
-                shooter.AddRange(data.Value);
-                break;
-            case UpgradeEffectType.ProjectileCount:
-                shooter.AddProjectileCount(Mathf.RoundToInt(data.Value));
-                break;
         }
+    }
+
+    public int GetWeaponCount(PlayerUpgradeData data)
+    {
+        return data != null && data.Weapon != null
+            ? shooter.GetEquippedCount(data.Weapon.WeaponType)
+            : 0;
     }
 }
