@@ -15,6 +15,7 @@ GameObject:
   - component: {fileID: 7606767753268192530}
   - component: {fileID: 7020664280190390183}
   - component: {fileID: 4471087862202340446}
+  - component: {fileID: 8644258886012488838}
   m_Layer: 0
   m_Name: Enemy
   m_TagString: Enemy
@@ -186,7 +187,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::EnemyController
   moveSpeed: 2
   contactDamage: 10
-  attackInterval: 1
 --- !u!114 &4471087862202340446
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -199,3 +199,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2eeb826bd68044b469376600e36442d4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PoolMember
+--- !u!114 &8644258886012488838
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7148497772640522725}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 29aa110495654d547be93ea1b97a39eb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::EnemyHitFlash
+  flashDuration: 0.08
+  flashColor: {r: 1, g: 1, b: 1, a: 1}
