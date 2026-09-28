@@ -1,8 +1,9 @@
 using TMPro;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
-using UnityEngine.UI;
 using UnityEngine.SceneManagement;
+using UnityEngine.UI;
 
 public class GameManager : MonoBehaviour
 {
@@ -24,7 +25,9 @@ public class GameManager : MonoBehaviour
 
     [Header("Buttons")]
     [SerializeField] private Button startButton;
+    [SerializeField] private Button pauseButton;
     [SerializeField] private Button resumeButton;
+    [SerializeField] private Button pauseRestartButton;
     [SerializeField] private Button restartButton;
 
     private bool hasStarted;
@@ -43,9 +46,12 @@ public class GameManager : MonoBehaviour
         startPanel.SetActive(true);
         pausePanel.SetActive(false);
         gameOverPanel.SetActive(false);
+        pauseButton.interactable = false;
 
         startButton.onClick.AddListener(StartRun);
+        pauseButton.onClick.AddListener(TogglePause);
         resumeButton.onClick.AddListener(ResumeRun);
+        pauseRestartButton.onClick.AddListener(RestartRun);
         restartButton.onClick.AddListener(RestartRun);
     }
 
@@ -57,8 +63,10 @@ public class GameManager : MonoBehaviour
 
         float bestTime = PlayerPrefs.GetFloat("BestTime", 0f);
         int bestKills = PlayerPrefs.GetInt("BestKills", 0);
-        bestText.text = $"Best Time: {FormatTime(bestTime)} | Best kills {bestKills}";
-        hud.SetState("Press Enter or Start");
+        bestText.text =
+            $"BEST  {FormatTime(bestTime)}  |  {bestKills} KILLS";
+        hud.SetState("READY");
+        SelectButton(startButton);
     }
 
     private void OnDestroy()
@@ -67,32 +75,44 @@ public class GameManager : MonoBehaviour
         {
             playerHealth.Died -= HandlePlayerDied;
         }
+
         EnemyController.DiedGlobally -= HandleEnemyDied;
+
+        startButton?.onClick.RemoveListener(StartRun);
+        pauseButton?.onClick.RemoveListener(TogglePause);
+        resumeButton?.onClick.RemoveListener(ResumeRun);
+        pauseRestartButton?.onClick.RemoveListener(RestartRun);
+        restartButton?.onClick.RemoveListener(RestartRun);
     }
 
     private void Update()
     {
         Keyboard keyboard = Keyboard.current;
-        if (!hasStarted && keyboard != null && keyboard.enterKey.wasPressedThisFrame)
+
+        if (!hasStarted && keyboard != null &&
+            keyboard.enterKey.wasPressedThisFrame)
         {
             StartRun();
         }
 
-        if (hasStarted && !isGameOver && !upgradeController.IsOpen && keyboard != null && keyboard.escapeKey.wasPressedThisFrame)
+        if (hasStarted && !isGameOver && !upgradeController.IsOpen &&
+            keyboard != null && keyboard.escapeKey.wasPressedThisFrame)
         {
             TogglePause();
         }
 
-        if (isGameOver && keyboard != null && keyboard.rKey.wasPressedThisFrame)
+        if (isGameOver && keyboard != null &&
+            keyboard.rKey.wasPressedThisFrame)
         {
             RestartRun();
         }
 
-        if (hasStarted && !isGameOver && !isPaused && !upgradeController.IsOpen)
+        if (hasStarted && !isGameOver && !isPaused &&
+            !upgradeController.IsOpen)
         {
             elapsedTime += Time.unscaledDeltaTime;
             hud.SetTimer(elapsedTime);
-        } 
+        }
     }
 
     public void StartRun()
@@ -101,26 +121,37 @@ public class GameManager : MonoBehaviour
         {
             return;
         }
+
         hasStarted = true;
         Time.timeScale = 1f;
         movement.enabled = true;
         shooter.enabled = true;
         spawner.enabled = true;
+        pauseButton.interactable = true;
         startPanel.SetActive(false);
         hud.SetState(string.Empty);
+        ClearSelection();
     }
 
     public void TogglePause()
     {
+        if (!hasStarted || isGameOver || upgradeController.IsOpen)
+        {
+            return;
+        }
+
         if (isPaused)
         {
             ResumeRun();
             return;
         }
+
         isPaused = true;
+        pausePanel.transform.SetAsLastSibling();
         pausePanel.SetActive(true);
-        hud.SetState("Paused");
+        hud.SetState("PAUSED");
         Time.timeScale = 0f;
+        SelectButton(resumeButton);
     }
 
     public void ResumeRun()
@@ -129,12 +160,14 @@ public class GameManager : MonoBehaviour
         {
             return;
         }
+
         isPaused = false;
         pausePanel.SetActive(false);
         hud.SetState(string.Empty);
         Time.timeScale = 1f;
+        ClearSelection();
     }
-    
+
     public void RestartRun()
     {
         Time.timeScale = 1f;
@@ -147,6 +180,7 @@ public class GameManager : MonoBehaviour
         {
             return;
         }
+
         killCount++;
         hud.SetKills(killCount);
     }
@@ -157,21 +191,51 @@ public class GameManager : MonoBehaviour
         {
             return;
         }
+
         isGameOver = true;
+        isPaused = false;
         movement.enabled = false;
         shooter.enabled = false;
         spawner.enabled = false;
+        pauseButton.interactable = false;
+        pausePanel.SetActive(false);
         Time.timeScale = 0f;
 
-        float bestTime = Mathf.Max(PlayerPrefs.GetFloat("BestTime", 0f), elapsedTime);
-        int bestKills = Mathf.Max(PlayerPrefs.GetInt("BestKills", 0), killCount);
+        float bestTime = Mathf.Max(
+            PlayerPrefs.GetFloat("BestTime", 0f),
+            elapsedTime);
+        int bestKills = Mathf.Max(
+            PlayerPrefs.GetInt("BestKills", 0),
+            killCount);
         PlayerPrefs.SetFloat("BestTime", bestTime);
         PlayerPrefs.SetInt("BestKills", bestKills);
         PlayerPrefs.Save();
 
-        finalStatsText.text = $"Time: {FormatTime(elapsedTime)} | Kills: {killCount}\n" + $"Best {FormatTime(bestTime)} | Best kills {bestKills}";
+        finalStatsText.text =
+            $"TIME  {FormatTime(elapsedTime)}\n" +
+            $"KILLS  {killCount}\n\n" +
+            $"BEST  {FormatTime(bestTime)}  |  {bestKills} KILLS";
+        gameOverPanel.transform.SetAsLastSibling();
         gameOverPanel.SetActive(true);
-        hud.SetState("Press R or Restart");
+        hud.SetState("RUN OVER");
+        SelectButton(restartButton);
+    }
+
+    private static void SelectButton(Button button)
+    {
+        if (EventSystem.current == null || button == null ||
+            !button.gameObject.activeInHierarchy)
+        {
+            return;
+        }
+
+        EventSystem.current.SetSelectedGameObject(null);
+        EventSystem.current.SetSelectedGameObject(button.gameObject);
+    }
+
+    private static void ClearSelection()
+    {
+        EventSystem.current?.SetSelectedGameObject(null);
     }
 
     private static string FormatTime(float seconds)

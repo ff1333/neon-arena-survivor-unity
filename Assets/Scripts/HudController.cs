@@ -4,8 +4,13 @@ using UnityEngine.UI;
 
 public class HudController : MonoBehaviour
 {
+    [Header("Bars")]
     [SerializeField] private Slider healthSlider;
     [SerializeField] private Slider experienceSlider;
+    [SerializeField] private TMP_Text healthValueText;
+    [SerializeField] private TMP_Text experienceValueText;
+
+    [Header("Run Information")]
     [SerializeField] private TMP_Text timerText;
     [SerializeField] private TMP_Text levelText;
     [SerializeField] private TMP_Text killText;
@@ -22,9 +27,11 @@ public class HudController : MonoBehaviour
         health.Changed += HandleHealthChanged;
         progress.ExperienceChanged += HandleExperienceChanged;
         progress.LevelChanged += HandleLevelChanged;
-        
+
         HandleHealthChanged(health.Current, health.Max);
-        HandleExperienceChanged(progress.Experience, progress.ExperienceToNextLevel);
+        HandleExperienceChanged(
+            progress.Experience,
+            progress.ExperienceToNextLevel);
         HandleLevelChanged(progress.Level);
         SetKills(0);
         SetTimer(0f);
@@ -36,6 +43,7 @@ public class HudController : MonoBehaviour
         {
             health.Changed -= HandleHealthChanged;
         }
+
         if (progress != null)
         {
             progress.ExperienceChanged -= HandleExperienceChanged;
@@ -53,7 +61,7 @@ public class HudController : MonoBehaviour
 
     public void SetKills(int kills)
     {
-        killText.text = $"Kills {kills}";
+        killText.text = $"KILLS {kills:000}";
     }
 
     public void SetState(string value)
@@ -65,17 +73,19 @@ public class HudController : MonoBehaviour
     {
         healthSlider.maxValue = max;
         healthSlider.value = current;
+        healthValueText.text =
+            $"HP {Mathf.CeilToInt(current)} / {Mathf.CeilToInt(max)}";
     }
 
     private void HandleExperienceChanged(int current, int required)
     {
         experienceSlider.maxValue = required;
         experienceSlider.value = current;
+        experienceValueText.text = $"XP {current} / {required}";
     }
 
     private void HandleLevelChanged(int level)
     {
-        levelText.text = $"Level {level}";
+        levelText.text = $"LV {level}";
     }
-
 }
