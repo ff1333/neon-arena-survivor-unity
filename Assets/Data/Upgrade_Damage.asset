@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: Upgrade_Damage
   m_EditorClassIdentifier: Assembly-CSharp::PlayerUpgradeData
   title: Global damage +12%
-  description: All equipped weapons deal 12% more damage.
+  description: All equipped weapons deal 12% more damage, up to 2.0x.
   effectType: 0
   value: 0.12
   weapon: {fileID: 0}

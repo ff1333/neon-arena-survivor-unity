@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: Upgrade_PickupRange
   m_EditorClassIdentifier: Assembly-CSharp::PlayerUpgradeData
   title: Pickup range +0.5
-  description: Experience attraction radius increases by 0.5.
+  description: Increase experience attraction range by 0.5, up to 6.
   effectType: 8
   value: 0.5
   weapon: {fileID: 0}
