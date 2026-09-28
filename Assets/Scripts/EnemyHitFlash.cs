@@ -5,37 +5,29 @@ public class EnemyHitFlash : MonoBehaviour
 {
     [SerializeField, Min(0.01f)] private float flashDuration = 0.08f;
     [SerializeField] private Color flashColor = Color.white;
+    [SerializeField, Range(1f, 1.5f)] private float punchScale = 1.12f;
 
     private SpriteRenderer spriteRenderer;
-    private Color normalColor;
+    private Color baseColor;
+    private Vector3 baseScale;
     private float restoreTime;
     private bool isFlashing;
 
     private void Awake()
     {
         spriteRenderer = GetComponent<SpriteRenderer>();
-        normalColor = spriteRenderer.color;
+        baseColor = spriteRenderer.color;
+        baseScale = transform.localScale;
     }
 
     private void OnEnable()
     {
-        if (spriteRenderer == null)
-        {
-            return;
-        }
-
-        spriteRenderer.color = normalColor;
-        isFlashing = false;
+        RestoreAppearance();
     }
 
     private void OnDisable()
     {
-        if (spriteRenderer != null)
-        {
-            spriteRenderer.color = normalColor;
-        }
-
-        isFlashing = false;
+        RestoreAppearance();
     }
 
     private void Update()
@@ -45,14 +37,38 @@ public class EnemyHitFlash : MonoBehaviour
             return;
         }
 
-        spriteRenderer.color = normalColor;
-        isFlashing = false;
+        RestoreAppearance();
+    }
+
+    public void SetBaseAppearance(Color color, Vector3 scale)
+    {
+        baseColor = color;
+        baseScale = scale;
+
+        if (!isFlashing)
+        {
+            spriteRenderer.color = baseColor;
+            transform.localScale = baseScale;
+        }
     }
 
     public void Flash()
     {
         spriteRenderer.color = flashColor;
+        transform.localScale = baseScale * punchScale;
         restoreTime = Time.time + flashDuration;
         isFlashing = true;
+    }
+
+    private void RestoreAppearance()
+    {
+        if (spriteRenderer == null)
+        {
+            return;
+        }
+
+        spriteRenderer.color = baseColor;
+        transform.localScale = baseScale;
+        isFlashing = false;
     }
 }

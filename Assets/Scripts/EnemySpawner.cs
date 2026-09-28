@@ -1,4 +1,17 @@
+using System;
 using UnityEngine;
+
+[Serializable]
+public class EnemySpawnEntry
+{
+    [SerializeField] private EnemyDefinition definition;
+    [SerializeField, Min(0f)] private float weight = 1f;
+    [SerializeField, Min(0f)] private float unlockTime;
+
+    public EnemyDefinition Definition => definition;
+    public float Weight => weight;
+    public float UnlockTime => unlockTime;
+}
 
 public class EnemySpawner : MonoBehaviour
 {
@@ -6,6 +19,9 @@ public class EnemySpawner : MonoBehaviour
     [SerializeField] private GameObjectPool enemyPool;
     [SerializeField] private GameObjectPool experiencePool;
     [SerializeField] private GameObjectPool warningPool;
+
+    [Header("Enemy Selection")]
+    [SerializeField] private EnemySpawnEntry[] enemyTypes;
 
     [Header("Difficulty")]
     [SerializeField, Min(0.1f)] private float startingInterval = 1.5f;
@@ -38,10 +54,26 @@ public class EnemySpawner : MonoBehaviour
         player = playerObject.transform;
 
         if (arenaBounds == null || enemyPool == null ||
-            experiencePool == null || warningPool == null)
+            experiencePool == null || warningPool == null ||
+            enemyTypes == null || enemyTypes.Length == 0)
         {
-            Debug.LogError("EnemySpawner requires ArenaBounds and all three pools.", this);
+            Debug.LogError(
+                "EnemySpawner requires bounds, pools and enemy types.",
+                this);
             enabled = false;
+            return;
+        }
+
+        for (int i = 0; i < enemyTypes.Length; i++)
+        {
+            if (enemyTypes[i] == null || enemyTypes[i].Definition == null)
+            {
+                Debug.LogError(
+                    $"EnemySpawner entry {i} has no definition.",
+                    this);
+                enabled = false;
+                return;
+            }
         }
     }
 
@@ -64,33 +96,89 @@ public class EnemySpawner : MonoBehaviour
             startingInterval - elapsed * intervalDecreasePerSecond);
 
         nextSpawnTime = Time.time + currentInterval;
-        SpawnOne();
+        SpawnOne(elapsed);
     }
 
-    private void SpawnOne()
+    private void SpawnOne(float elapsed)
     {
+        EnemyDefinition selectedDefinition =
+            ChooseEnemyDefinition(elapsed);
+        if (selectedDefinition == null)
+        {
+            Debug.LogError(
+                "No enemy type is eligible. Check unlock times and weights.",
+                this);
+            enabled = false;
+            return;
+        }
+
         Vector3 warningPosition = ChooseSpawnPosition();
-        GameObject warningObject = warningPool.Get(warningPosition, Quaternion.identity);
+        GameObject warningObject = warningPool.Get(
+            warningPosition,
+            Quaternion.identity);
         warningObject.GetComponent<EnemySpawnWarning>().Configure(
             player,
             enemyPool,
             experiencePool,
+            selectedDefinition,
             warningDuration);
+    }
+
+    private EnemyDefinition ChooseEnemyDefinition(float elapsed)
+    {
+        float totalWeight = 0f;
+        EnemyDefinition lastEligible = null;
+
+        for (int i = 0; i < enemyTypes.Length; i++)
+        {
+            EnemySpawnEntry entry = enemyTypes[i];
+            if (elapsed >= entry.UnlockTime && entry.Weight > 0f)
+            {
+                totalWeight += entry.Weight;
+                lastEligible = entry.Definition;
+            }
+        }
+
+        if (totalWeight <= 0f)
+        {
+            return null;
+        }
+
+        float roll = UnityEngine.Random.Range(0f, totalWeight);
+
+        for (int i = 0; i < enemyTypes.Length; i++)
+        {
+            EnemySpawnEntry entry = enemyTypes[i];
+            if (elapsed < entry.UnlockTime || entry.Weight <= 0f)
+            {
+                continue;
+            }
+
+            roll -= entry.Weight;
+            if (roll <= 0f)
+            {
+                return entry.Definition;
+            }
+        }
+
+        return lastEligible;
     }
 
     private Vector3 ChooseSpawnPosition()
     {
         Vector2 min = arenaBounds.Minimum + Vector2.one * arenaPadding;
         Vector2 max = arenaBounds.Maximum - Vector2.one * arenaPadding;
-        float minimumDistanceSqr = minimumDistanceFromPlayer * minimumDistanceFromPlayer;
+        float minimumDistanceSqr =
+            minimumDistanceFromPlayer * minimumDistanceFromPlayer;
 
         for (int attempt = 0; attempt < positionAttempts; attempt++)
         {
             Vector2 candidate = new Vector2(
-                Random.Range(min.x, max.x),
-                Random.Range(min.y, max.y));
+                UnityEngine.Random.Range(min.x, max.x),
+                UnityEngine.Random.Range(min.y, max.y));
 
-            if ((candidate - (Vector2)player.position).sqrMagnitude >= minimumDistanceSqr)
+            if ((candidate - (Vector2)player.position).sqrMagnitude >=
+                minimumDistanceSqr)
             {
                 return candidate;
             }
@@ -110,11 +198,13 @@ public class EnemySpawner : MonoBehaviour
         };
 
         Vector2 farthest = corners[0];
-        float farthestDistanceSqr = (farthest - (Vector2)player.position).sqrMagnitude;
+        float farthestDistanceSqr =
+            (farthest - (Vector2)player.position).sqrMagnitude;
 
         for (int i = 1; i < corners.Length; i++)
         {
-            float distanceSqr = (corners[i] - (Vector2)player.position).sqrMagnitude;
+            float distanceSqr =
+                (corners[i] - (Vector2)player.position).sqrMagnitude;
             if (distanceSqr > farthestDistanceSqr)
             {
                 farthest = corners[i];
