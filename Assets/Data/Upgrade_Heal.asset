@@ -13,6 +13,7 @@ MonoBehaviour:
   m_Name: Upgrade_Heal
   m_EditorClassIdentifier: Assembly-CSharp::PlayerUpgradeData
   title: Heal 20
-  description: Player heal increases by 20.
+  description: Restore 20 HP. Hidden while health is full.
   effectType: 2
   value: 20
+  weapon: {fileID: 0}

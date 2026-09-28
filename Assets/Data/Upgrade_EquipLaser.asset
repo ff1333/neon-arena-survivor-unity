@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: Upgrade_EquipLaser
   m_EditorClassIdentifier: Assembly-CSharp::PlayerUpgradeData
   title: Equip Laser
-  description: Adds one laser. Maximum 2.
+  description: Add one laser, maximum 2.
   effectType: 7
   value: 0
   weapon: {fileID: 11400000, guid: 1105560f85bccf3439d64bad5eb0b55b, type: 2}

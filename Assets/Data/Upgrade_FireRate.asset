@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: Upgrade_FireRate
   m_EditorClassIdentifier: Assembly-CSharp::PlayerUpgradeData
   title: Global fire rate +10%
-  description: All equipped weapons fire 10% faster.
+  description: All equipped weapons fire 10% faster, up to 2.0x.
   effectType: 1
   value: 0.1
   weapon: {fileID: 0}

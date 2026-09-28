@@ -13,6 +13,7 @@ MonoBehaviour:
   m_Name: Upgrade_MoveSpeed
   m_EditorClassIdentifier: Assembly-CSharp::PlayerUpgradeData
   title: Move speed +
-  description: player movespeed increases by 0.5.
+  description: Increase movement speed by 0.5, up to 9.
   effectType: 3
   value: 0.5
+  weapon: {fileID: 0}

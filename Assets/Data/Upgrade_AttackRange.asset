@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: Upgrade_AttackRange
   m_EditorClassIdentifier: Assembly-CSharp::PlayerUpgradeData
   title: Global range +8%
-  description: All equipped weapons gain 8% attack range.
+  description: All equipped weapons gain 8% range, up to 1.5x.
   effectType: 5
   value: 0.08
   weapon: {fileID: 0}

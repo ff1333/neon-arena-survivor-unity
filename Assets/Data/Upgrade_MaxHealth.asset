@@ -13,6 +13,7 @@ MonoBehaviour:
   m_Name: Upgrade_MaxHealth
   m_EditorClassIdentifier: Assembly-CSharp::PlayerUpgradeData
   title: Max HP +15
-  description: 'Player max-health increases by 15. '
+  description: Increase maximum and current health by 15.
   effectType: 4
   value: 15
+  weapon: {fileID: 0}

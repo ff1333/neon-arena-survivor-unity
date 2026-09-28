@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: Upgrade_EquipSMG
   m_EditorClassIdentifier: Assembly-CSharp::PlayerUpgradeData
   title: Equip SMG
-  description: Adds one SMG. Maximum 2.
+  description: Add one SMG, maximum 2.
   effectType: 7
   value: 0
   weapon: {fileID: 11400000, guid: 18a72ce99dd0e264ca6543e4258ec4e3, type: 2}
