@@ -1,15 +1,16 @@
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
 public class UpgradeController : MonoBehaviour
 {
-    private const float ChoiceSpacing = 110f;
-
     [SerializeField] private PlayerProgress progress;
     [SerializeField] private PlayerUpgradeApplier applier;
     [SerializeField] private GameObject upgradePanel;
+    [SerializeField] private TMP_Text headingText;
+    [SerializeField] private RectTransform choicesContainer;
     [SerializeField] private Button[] buttons;
     [SerializeField] private TMP_Text[] labels;
     [SerializeField] private Image[] weaponIcons;
@@ -18,7 +19,8 @@ public class UpgradeController : MonoBehaviour
     private readonly PlayerUpgradeData[] currentChoices =
         new PlayerUpgradeData[3];
 
-    public bool IsOpen => upgradePanel != null && upgradePanel.activeSelf;
+    public bool IsOpen =>
+        upgradePanel != null && upgradePanel.activeSelf;
 
     private void Awake()
     {
@@ -88,7 +90,7 @@ public class UpgradeController : MonoBehaviour
             return;
         }
 
-        LayoutVisibleButtons(choices.Count);
+        headingText.text = $"LEVEL {progress.Level}  /  CHOOSE ONE";
 
         for (int i = 0; i < currentChoices.Length; i++)
         {
@@ -102,41 +104,29 @@ public class UpgradeController : MonoBehaviour
             }
 
             PlayerUpgradeData choice = currentChoices[i];
-            bool isWeapon = choice.EffectType == UpgradeEffectType.EquipWeapon;
+            bool isWeapon =
+                choice.EffectType == UpgradeEffectType.EquipWeapon;
             weaponIcons[i].gameObject.SetActive(isWeapon);
 
+            string countText = string.Empty;
             if (isWeapon)
             {
                 WeaponDefinition weapon = choice.Weapon;
                 weaponIcons[i].sprite = weapon.Icon;
                 weaponIcons[i].color = weapon.DisplayColor;
-                int count = applier.GetWeaponCount(choice);
-                labels[i].text =
-                    $"{choice.Title}  {count}/2\n{choice.Description}";
+                countText = $"  {applier.GetWeaponCount(choice)}/2";
             }
-            else
-            {
-                labels[i].text =
-                    $"{choice.Title}\n{choice.Description}";
-            }
+
+            labels[i].text =
+                $"<b>{choice.Title}</b>{countText}\n" +
+                $"<size=22><color=#9FB0BC>{choice.Description}</color></size>";
         }
 
         upgradePanel.transform.SetAsLastSibling();
         upgradePanel.SetActive(true);
+        LayoutRebuilder.ForceRebuildLayoutImmediate(choicesContainer);
         Time.timeScale = 0f;
-    }
-
-    private void LayoutVisibleButtons(int visibleCount)
-    {
-        float startY = (visibleCount - 1) * ChoiceSpacing * 0.5f;
-
-        for (int i = 0; i < visibleCount; i++)
-        {
-            RectTransform rect = buttons[i].GetComponent<RectTransform>();
-            Vector2 position = rect.anchoredPosition;
-            position.y = startY - i * ChoiceSpacing;
-            rect.anchoredPosition = position;
-        }
+        SelectButton(buttons[0]);
     }
 
     private static void AddRandomChoices(
@@ -163,5 +153,18 @@ public class UpgradeController : MonoBehaviour
         applier.Apply(currentChoices[index]);
         upgradePanel.SetActive(false);
         Time.timeScale = 1f;
+        EventSystem.current?.SetSelectedGameObject(null);
+    }
+
+    private static void SelectButton(Button button)
+    {
+        if (EventSystem.current == null || button == null ||
+            !button.gameObject.activeInHierarchy)
+        {
+            return;
+        }
+
+        EventSystem.current.SetSelectedGameObject(null);
+        EventSystem.current.SetSelectedGameObject(button.gameObject);
     }
 }
