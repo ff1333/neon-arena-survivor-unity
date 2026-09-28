@@ -649,8 +649,8 @@ MonoBehaviour:
     weight: 8
     unlockTime: 45
   startingInterval: 1.5
-  minimumInterval: 0.65
-  intervalDecreasePerSecond: 0.004
+  minimumInterval: 0.55
+  intervalDecreasePerSecond: 0.0045
   arenaBounds: {fileID: 338327460}
   arenaPadding: 0.75
   minimumDistanceFromPlayer: 5
