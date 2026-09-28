@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 55a366aa722e7e04fb00165064058035, type: 3}
   m_Name: Upgrade_Heal
   m_EditorClassIdentifier: Assembly-CSharp::PlayerUpgradeData
-  title: Heal 20
+  title: Restore 20 HP
   description: Restore 20 HP. Hidden while health is full.
   effectType: 2
   value: 20
