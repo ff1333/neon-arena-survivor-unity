@@ -119,6 +119,9 @@ public class PlayerShooter : MonoBehaviour
                 damageMultiplier,
                 rangeMultiplier);
 
+            CombatFeedback.Instance?.PlayShot(
+                weapon.Definition.WeaponType);
+
             weapon.NextFireTime = Time.time +
                 weapon.Definition.FireInterval / attackSpeedMultiplier;
         }

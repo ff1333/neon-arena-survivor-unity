@@ -60,6 +60,7 @@ public class GameManager : MonoBehaviour
         hud.Initialize(playerHealth, progress);
         playerHealth.Died += HandlePlayerDied;
         EnemyController.DiedGlobally += HandleEnemyDied;
+        progress.LevelChanged += HandleLevelChanged;
 
         float bestTime = PlayerPrefs.GetFloat("BestTime", 0f);
         int bestKills = PlayerPrefs.GetInt("BestKills", 0);
@@ -77,6 +78,10 @@ public class GameManager : MonoBehaviour
         }
 
         EnemyController.DiedGlobally -= HandleEnemyDied;
+        if (progress != null)
+        {
+            progress.LevelChanged -= HandleLevelChanged;
+        }
 
         startButton?.onClick.RemoveListener(StartRun);
         pauseButton?.onClick.RemoveListener(TogglePause);
@@ -172,6 +177,17 @@ public class GameManager : MonoBehaviour
     {
         Time.timeScale = 1f;
         SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+    }
+
+    private void HandleLevelChanged(int level)
+    {
+        if (level <= 1)
+        {
+            return;
+        }
+
+        CombatFeedback.Instance?.PlayLevelUp(
+            progress.transform.position);
     }
 
     private void HandleEnemyDied()

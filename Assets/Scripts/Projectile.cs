@@ -94,7 +94,21 @@ public class Projectile : MonoBehaviour
                 hitFlash.Flash();
             }
 
+            Vector3 hitPosition = transform.position;
+            Color hitColor = other.TryGetComponent(
+                out EnemyController enemyController)
+                ? enemyController.CurrentColor
+                : Color.white;
+
             enemyHealth.TakeDamage(damage);
+
+            if (!enemyHealth.IsDead)
+            {
+                CombatFeedback.Instance?.PlayEnemyHit(
+                    hitPosition,
+                    hitColor);
+            }
+
             ShakeCamera(enemyHealth.IsDead ? 1.6f : 1f);
         }
 
