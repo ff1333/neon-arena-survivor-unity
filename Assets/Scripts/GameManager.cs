@@ -39,6 +39,7 @@ public class GameManager : MonoBehaviour
     private void Awake()
     {
         Time.timeScale = 0f;
+        MobileControlsOverlay.SetGameplayActive(false);
         movement.enabled = false;
         shooter.enabled = false;
         spawner.enabled = false;
@@ -135,6 +136,7 @@ public class GameManager : MonoBehaviour
         pauseButton.interactable = true;
         startPanel.SetActive(false);
         hud.SetState(string.Empty);
+        MobileControlsOverlay.SetGameplayActive(true);
         ClearSelection();
     }
 
@@ -152,6 +154,7 @@ public class GameManager : MonoBehaviour
         }
 
         isPaused = true;
+        MobileControlsOverlay.SetGameplayActive(false);
         pausePanel.transform.SetAsLastSibling();
         pausePanel.SetActive(true);
         hud.SetState("PAUSED");
@@ -170,6 +173,7 @@ public class GameManager : MonoBehaviour
         pausePanel.SetActive(false);
         hud.SetState(string.Empty);
         Time.timeScale = 1f;
+        MobileControlsOverlay.SetGameplayActive(true);
         ClearSelection();
     }
 
@@ -210,6 +214,7 @@ public class GameManager : MonoBehaviour
 
         isGameOver = true;
         isPaused = false;
+        MobileControlsOverlay.SetGameplayActive(false);
         movement.enabled = false;
         shooter.enabled = false;
         spawner.enabled = false;

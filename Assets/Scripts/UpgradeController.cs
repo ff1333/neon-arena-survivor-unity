@@ -124,6 +124,7 @@ public class UpgradeController : MonoBehaviour
 
         upgradePanel.transform.SetAsLastSibling();
         upgradePanel.SetActive(true);
+        MobileControlsOverlay.SetGameplayActive(false);
         LayoutRebuilder.ForceRebuildLayoutImmediate(choicesContainer);
         Time.timeScale = 0f;
         SelectButton(buttons[0]);
@@ -153,6 +154,7 @@ public class UpgradeController : MonoBehaviour
         applier.Apply(currentChoices[index]);
         upgradePanel.SetActive(false);
         Time.timeScale = 1f;
+        MobileControlsOverlay.SetGameplayActive(true);
         EventSystem.current?.SetSelectedGameObject(null);
     }
 
