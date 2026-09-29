@@ -203,14 +203,15 @@ Canvas Scaler 已正确使用 1920 x 1080 参考分辨率和宽高各占一半�
 
 ## 截图证据
 
-当前尚未保存正式截图，这不影响继续学习、实际测试或提交代码，但不能在 README 中声称已有截图证据。准备公开 GitHub 作品集页面前，再按 `docs/images/README.md` 的要求补拍：
+作品集包装阶段已经从最终 `v1.0.0` WebGL 构建采集并检查以下真实画面：
 
-- [ ] `01-start-screen.png`
-- [ ] `02-gameplay-60s.png`
-- [ ] `03-level-up.png`
-- [ ] `04-late-game-120s.png`
-- [ ] `05-game-over.png`
-- [ ] `06-console-clean.png`
+- [x] `01-start-screen.png`
+- [x] `02-gameplay.png`
+- [x] `03-level-up.png`
+- [x] `04-combat-feedback.png`
+- [x] `07-game-over.png`
+
+对象池前后 Profiler 图分别保存在 `05-profiler-before.png` 和 `06-profiler-after.png`。Profiler 两次采集的玩法规模不同，因此只作为优化过程记录，不计算固定性能提升比例。
 
 修改前没有截图的项目如实写“无修改前截图”，使用 Git diff、旧提交和问题复现步骤作为证据，不补造图片。
 
