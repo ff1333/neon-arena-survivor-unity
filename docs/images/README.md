@@ -1,6 +1,22 @@
-# 游戏截图采集清单（作品集发布前完成）
+# 游戏截图与证据清单
 
-这里保存 Neon Arena Rebuild 的真实运行截图。截图必须来自学习工程，不使用参考工程图片。截图不是继续学习、测试代码或本地 Git 提交的前置条件；当前不会保存也可以先跳过。准备 GitHub 项目首页和投递简历前再补齐即可。
+这里保存 Neon Arena Rebuild 学习工程的真实运行截图，不使用参考工程或 AI 生成图片冒充运行结果。
+
+## 当前文件
+
+| 文件 | 内容 | 来源 |
+|---|---|---|
+| `01-start-screen.png` | 开始界面 | `v1.0.0` WebGL 正式构建 |
+| `02-gameplay.png` | 自动射击与敌人 | `v1.0.0` WebGL 正式构建 |
+| `03-level-up.png` | 升级三选一 | `v1.0.0` WebGL 正式构建 |
+| `04-combat-feedback.png` | 多敌人与命中反馈 | `v1.0.0` WebGL 正式构建 |
+| `05-profiler-before.png` | 对象池前 Profiler 记录 | 原始文件 `profiler-before-pooling.png` |
+| `06-profiler-after.png` | 对象池后 Profiler 记录 | 原始文件 `profiler-after-pooling.png` |
+| `07-game-over.png` | 结算与最高纪录 | `v1.0.0` WebGL 正式构建 |
+
+`04-combat-feedback.png` 只证明实战中存在多敌人与命中反馈，不把白色受击闪烁误写成独立敌人类型。敌人三类型的实现与自动回归证据见 `docs/devlogs/09-enemy-audio-feedback.md`。
+
+Profiler 两张图来自不同玩法规模的提交，不能用单帧数值计算固定性能提升比例。解释边界见 `docs/optimization/01-object-pooling-profiler.md`。
 
 ## 图片保存在哪里
 
@@ -31,13 +47,13 @@ Windows 截图并保存的完整操作：
 5. 使用 Windows `Win + Shift + S` 截取 Game 区域，不要截整个桌面和个人信息。
 6. 将图片保存到本目录，必须使用下面的固定文件名。
 
-## 发布作品集前建议拍摄
+## 需要重新采集时
 
 ### 01-start-screen.png
 
 刚点击 Play、尚未开始游戏。必须看到标题、Start 按钮和最高纪录；计时应为 00:00。
 
-### 02-gameplay-60s.png
+### 02-gameplay.png
 
 运行约 60 秒。画面应同时看到玩家、多个敌人、子弹、经验物和 HUD，玩家不能越界。
 
@@ -45,22 +61,22 @@ Windows 截图并保存的完整操作：
 
 升级三选一面板打开时拍摄。三个按钮必须集中在中央、文字完整、无重叠。
 
-### 04-late-game-120s.png
+### 04-combat-feedback.png
 
 运行约 120 秒。用于证明难度曲线已经增加每波数量，画面应比开局有明显更高压力，但 UI 仍清晰。
 
-### 05-game-over.png
+### 07-game-over.png
 
 玩家死亡后的结算画面。必须看到本局时间、击杀数、最高纪录和 Restart 按钮。
 
-### 06-console-clean.png
+### 可选：08-console-clean.png
 
 停止 Play 后打开 Console，确认红色 Error 数量为 0。只截 Console 区域和清楚可见的计数。
 
 ## 作品集图片验收
 
-- [ ] 六张图片均为本人学习工程的真实画面。
-- [ ] 没有使用参考工程或 AI 生成图片冒充运行结果。
-- [ ] 文件名与上述清单完全一致。
-- [ ] 图片中没有手机号、邮箱、Token、用户名目录等敏感信息。
-- [ ] README 引用图片前，使用资源管理器逐张打开确认没有截错。
+- [x] 游戏截图均为本人学习工程正式构建的真实画面。
+- [x] 没有使用参考工程或 AI 生成图片冒充运行结果。
+- [x] README 引用的文件名与真实文件完全一致。
+- [x] 图片中没有手机号、邮箱、Token、用户名目录等敏感信息。
+- [x] 已逐张打开检查，没有全黑、错误裁切或窗口边框。
