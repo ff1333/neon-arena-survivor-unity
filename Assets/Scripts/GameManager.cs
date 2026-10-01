@@ -31,6 +31,7 @@ public class GameManager : MonoBehaviour
     [SerializeField] private Button restartButton;
 
     private bool hasStarted;
+    private bool isChoosingStartingWeapon;
     private bool isPaused;
     private bool isGameOver;
     private float elapsedTime;
@@ -95,7 +96,7 @@ public class GameManager : MonoBehaviour
     {
         Keyboard keyboard = Keyboard.current;
 
-        if (!hasStarted && keyboard != null &&
+        if (!hasStarted && !isChoosingStartingWeapon && keyboard != null &&
             keyboard.enterKey.wasPressedThisFrame)
         {
             StartRun();
@@ -123,18 +124,41 @@ public class GameManager : MonoBehaviour
 
     public void StartRun()
     {
-        if (hasStarted)
+        if (hasStarted || isChoosingStartingWeapon)
         {
             return;
         }
 
+        isChoosingStartingWeapon = true;
+        startPanel.SetActive(false);
+        hud.SetState("CHOOSE WEAPON");
+        ClearSelection();
+
+        if (upgradeController.ShowStartingWeaponChoices(BeginRun))
+        {
+            return;
+        }
+
+        isChoosingStartingWeapon = false;
+        startPanel.SetActive(true);
+        hud.SetState("READY");
+        SelectButton(startButton);
+    }
+
+    private void BeginRun()
+    {
+        if (hasStarted || !isChoosingStartingWeapon)
+        {
+            return;
+        }
+
+        isChoosingStartingWeapon = false;
         hasStarted = true;
         Time.timeScale = 1f;
         movement.enabled = true;
         shooter.enabled = true;
         spawner.enabled = true;
         pauseButton.interactable = true;
-        startPanel.SetActive(false);
         hud.SetState(string.Empty);
         MobileControlsOverlay.SetGameplayActive(true);
         ClearSelection();

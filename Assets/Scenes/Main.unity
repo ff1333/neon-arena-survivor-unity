@@ -3783,7 +3783,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerShooter
   projectilePool: {fileID: 1126171852}
-  startingWeapon: {fileID: 11400000, guid: d508886178115634d831932c4272aa51, type: 2}
   weaponSlots:
   - {fileID: 758845879}
   - {fileID: 1464837914}
@@ -3793,7 +3792,6 @@ MonoBehaviour:
   - {fileID: 1377774886}
   priorityBandWidth: 1.5
   idleScanInterval: 0.1
-  maximumCopiesPerType: 2
   damageMultiplier: 1
   maximumDamageMultiplier: 2
   rangeMultiplier: 1

@@ -7,6 +7,9 @@ public class PlayerUpgradeApplier : MonoBehaviour
     [SerializeField] private Health health;
     [SerializeField] private PlayerPickupRange pickupRange;
 
+    public int EquippedWeaponCount => shooter.EquippedCount;
+    public int WeaponSlotCapacity => shooter.WeaponSlotCapacity;
+
     public bool CanApply(PlayerUpgradeData data)
     {
         if (data == null)

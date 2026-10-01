@@ -80,6 +80,8 @@ public static class ReleasePipeline
                 BuildTarget.Android), passed, failed);
 
         VerifySceneConfiguration(passed, failed);
+        VerifyWeaponLoadoutRule(passed, failed);
+        VerifyExperiencePickupStyles(passed, failed);
         VerifyPoolExpansionAndDuplicateRelease(passed, failed);
         ResetEnemyRegistry();
         Verify("Target selection returns null with no enemies",
@@ -297,12 +299,201 @@ public static class ReleasePipeline
         }
     }
 
+    private static void VerifyWeaponLoadoutRule(
+        List<string> passed,
+        List<string> failed)
+    {
+        PlayerShooter sceneShooter =
+            UnityEngine.Object.FindFirstObjectByType<PlayerShooter>(
+                FindObjectsInactive.Include);
+
+        if (sceneShooter == null)
+        {
+            failed.Add("Main scene contains PlayerShooter");
+            return;
+        }
+
+        UpgradeController controller =
+            UnityEngine.Object.FindFirstObjectByType<UpgradeController>(
+                FindObjectsInactive.Include);
+        SerializedObject serializedSceneShooter =
+            new SerializedObject(sceneShooter);
+        WeaponDefinition weapon = null;
+        int startingWeaponChoiceCount = 0;
+        HashSet<WeaponType> startingWeaponTypes =
+            new HashSet<WeaponType>();
+
+        if (controller != null)
+        {
+            SerializedObject serializedController =
+                new SerializedObject(controller);
+            SerializedProperty upgrades =
+                serializedController.FindProperty("availableUpgrades");
+
+            for (int i = 0; i < upgrades.arraySize; i++)
+            {
+                PlayerUpgradeData upgrade = upgrades
+                    .GetArrayElementAtIndex(i)
+                    .objectReferenceValue as PlayerUpgradeData;
+                if (upgrade == null ||
+                    upgrade.EffectType != UpgradeEffectType.EquipWeapon ||
+                    upgrade.Weapon == null)
+                {
+                    continue;
+                }
+
+                weapon ??= upgrade.Weapon;
+                startingWeaponChoiceCount++;
+                startingWeaponTypes.Add(upgrade.Weapon.WeaponType);
+            }
+        }
+
+        Verify("Player starts with no pre-equipped weapon",
+            serializedSceneShooter.FindProperty("startingWeapon") == null &&
+            sceneShooter.EquippedCount == 0, passed, failed);
+        Verify("Starting selection has three distinct weapon choices",
+            startingWeaponChoiceCount == 3 &&
+            startingWeaponTypes.Count == 3, passed, failed);
+        GameObject testObject = new GameObject("WeaponLoadoutRuleTest");
+        testObject.SetActive(false);
+
+        try
+        {
+            PlayerShooter testShooter =
+                testObject.AddComponent<PlayerShooter>();
+            SerializedObject serializedTestShooter =
+                new SerializedObject(testShooter);
+            SerializedProperty slots =
+                serializedTestShooter.FindProperty("weaponSlots");
+            slots.arraySize = 6;
+
+            for (int i = 0; i < slots.arraySize; i++)
+            {
+                GameObject slot = new GameObject($"TestSlot{i}");
+                slot.transform.SetParent(testObject.transform);
+                slot.AddComponent<SpriteRenderer>();
+                slots.GetArrayElementAtIndex(i).objectReferenceValue =
+                    slot.transform;
+            }
+
+            serializedTestShooter.ApplyModifiedPropertiesWithoutUndo();
+
+            bool filledWithOneType = weapon != null;
+            while (filledWithOneType &&
+                   testShooter.EquippedCount <
+                   testShooter.WeaponSlotCapacity)
+            {
+                filledWithOneType = testShooter.CanEquip(weapon) &&
+                                    testShooter.EquipWeapon(weapon);
+            }
+
+            filledWithOneType &= testShooter.WeaponSlotCapacity == 6;
+            filledWithOneType &= testShooter.EquippedCount == 6;
+            filledWithOneType &= weapon != null &&
+                testShooter.GetEquippedCount(weapon.WeaponType) == 6;
+
+            Verify("One weapon type can fill all six weapon slots",
+                filledWithOneType, passed, failed);
+            Verify("A seventh weapon is rejected by the total slot limit",
+                weapon != null && !testShooter.CanEquip(weapon),
+                passed, failed);
+        }
+        catch (Exception exception)
+        {
+            failed.Add(
+                "Weapon loadout verification threw: " + exception.Message);
+        }
+        finally
+        {
+            UnityEngine.Object.DestroyImmediate(testObject);
+        }
+    }
+
     private static void ResetEnemyRegistry()
     {
         MethodInfo reset = typeof(EnemyRegistry).GetMethod(
             "ResetRegistry",
             BindingFlags.Static | BindingFlags.NonPublic);
         reset?.Invoke(null, null);
+    }
+
+    private static void VerifyExperiencePickupStyles(
+        List<string> passed,
+        List<string> failed)
+    {
+        string[] definitionPaths =
+        {
+            "Assets/Data/Enemies/Enemy_Chaser.asset",
+            "Assets/Data/Enemies/Enemy_Dasher.asset",
+            "Assets/Data/Enemies/Enemy_Berserker.asset"
+        };
+        HashSet<ExperiencePickupShape> shapes =
+            new HashSet<ExperiencePickupShape>();
+        HashSet<Color32> colors = new HashSet<Color32>();
+        HashSet<int> sprites = new HashSet<int>();
+        GameObject testObject = new GameObject("ExperiencePickupStyleTest");
+        testObject.SetActive(false);
+
+        try
+        {
+            ExperiencePickup pickup =
+                testObject.AddComponent<ExperiencePickup>();
+            InvokePrivate(pickup, "Awake");
+            SpriteRenderer renderer =
+                testObject.GetComponent<SpriteRenderer>();
+            bool stylesApplied = renderer != null;
+
+            for (int i = 0; i < definitionPaths.Length; i++)
+            {
+                EnemyDefinition definition =
+                    AssetDatabase.LoadAssetAtPath<EnemyDefinition>(
+                        definitionPaths[i]);
+                if (definition == null)
+                {
+                    stylesApplied = false;
+                    continue;
+                }
+
+                shapes.Add(definition.ExperiencePickupShape);
+                colors.Add((Color32)definition.ExperiencePickupColor);
+                pickup.Configure(
+                    definition.ExperienceReward,
+                    definition.ExperiencePickupShape,
+                    definition.ExperiencePickupColor,
+                    definition.ExperiencePickupScale);
+
+                stylesApplied &= renderer.sprite != null;
+                stylesApplied &= renderer.color ==
+                    definition.ExperiencePickupColor;
+                stylesApplied &= Mathf.Approximately(
+                    testObject.transform.localScale.x,
+                    definition.ExperiencePickupScale);
+
+                if (renderer.sprite != null)
+                {
+                    sprites.Add(renderer.sprite.GetInstanceID());
+                }
+            }
+
+            Verify("Enemy types use three distinct experience pickup styles",
+                shapes.Count == 3 && colors.Count == 3,
+                passed,
+                failed);
+            Verify("Pooled experience pickup reapplies shape color and scale",
+                stylesApplied && sprites.Count == 3,
+                passed,
+                failed);
+        }
+        catch (Exception exception)
+        {
+            failed.Add(
+                "Experience pickup style verification threw: " +
+                exception.Message);
+        }
+        finally
+        {
+            UnityEngine.Object.DestroyImmediate(testObject);
+        }
     }
 
     private static void InvokePrivate(object target, string methodName)

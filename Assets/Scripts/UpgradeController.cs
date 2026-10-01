@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
@@ -18,6 +19,9 @@ public class UpgradeController : MonoBehaviour
 
     private readonly PlayerUpgradeData[] currentChoices =
         new PlayerUpgradeData[3];
+    private Action selectionCompleted;
+    private bool isStartingWeaponSelection;
+    private int choicesOpenedFrame = -1;
 
     public bool IsOpen =>
         upgradePanel != null && upgradePanel.activeSelf;
@@ -43,35 +47,58 @@ public class UpgradeController : MonoBehaviour
         progress.LevelUpRequested -= ShowChoices;
     }
 
-    private void ShowChoices()
+    public bool ShowStartingWeaponChoices(Action onSelected)
     {
-        if (buttons.Length != 3 || labels.Length != 3 ||
-            weaponIcons.Length != 3)
+        if (IsOpen || applier.EquippedWeaponCount != 0 ||
+            !ValidateChoiceUi())
+        {
+            return false;
+        }
+
+        List<PlayerUpgradeData> weapons = GetEligibleWeaponUpgrades();
+        weapons.Sort((left, right) =>
+            left.Weapon.WeaponType.CompareTo(right.Weapon.WeaponType));
+
+        HashSet<WeaponType> weaponTypes = new HashSet<WeaponType>();
+        for (int i = 0; i < weapons.Count; i++)
+        {
+            weaponTypes.Add(weapons[i].Weapon.WeaponType);
+        }
+
+        if (weapons.Count != 3 || weaponTypes.Count != 3)
         {
             Debug.LogError(
-                "UpgradeController requires exactly 3 buttons, labels and icons.",
+                "Starting weapon selection requires three distinct weapon upgrades.",
                 this);
+            return false;
+        }
+
+        selectionCompleted = onSelected;
+        isStartingWeaponSelection = true;
+        OpenChoices(weapons, "CHOOSE STARTING WEAPON");
+        return true;
+    }
+
+    private void ShowChoices()
+    {
+        if (IsOpen)
+        {
             return;
         }
 
-        List<PlayerUpgradeData> weapons = new List<PlayerUpgradeData>();
+        List<PlayerUpgradeData> weapons = GetEligibleWeaponUpgrades();
         List<PlayerUpgradeData> utilities = new List<PlayerUpgradeData>();
 
         foreach (PlayerUpgradeData upgrade in availableUpgrades)
         {
-            if (!applier.CanApply(upgrade))
+            if (upgrade == null ||
+                upgrade.EffectType == UpgradeEffectType.EquipWeapon ||
+                !applier.CanApply(upgrade))
             {
                 continue;
             }
 
-            if (upgrade.EffectType == UpgradeEffectType.EquipWeapon)
-            {
-                weapons.Add(upgrade);
-            }
-            else
-            {
-                utilities.Add(upgrade);
-            }
+            utilities.Add(upgrade);
         }
 
         List<PlayerUpgradeData> choices = new List<PlayerUpgradeData>(3);
@@ -90,7 +117,39 @@ public class UpgradeController : MonoBehaviour
             return;
         }
 
-        headingText.text = $"LEVEL {progress.Level}  /  CHOOSE ONE";
+        selectionCompleted = null;
+        isStartingWeaponSelection = false;
+        OpenChoices(choices, $"LEVEL {progress.Level}  /  CHOOSE ONE");
+    }
+
+    private List<PlayerUpgradeData> GetEligibleWeaponUpgrades()
+    {
+        List<PlayerUpgradeData> weapons = new List<PlayerUpgradeData>();
+
+        foreach (PlayerUpgradeData upgrade in availableUpgrades)
+        {
+            if (upgrade != null &&
+                upgrade.EffectType == UpgradeEffectType.EquipWeapon &&
+                upgrade.Weapon != null &&
+                applier.CanApply(upgrade))
+            {
+                weapons.Add(upgrade);
+            }
+        }
+
+        return weapons;
+    }
+
+    private void OpenChoices(
+        List<PlayerUpgradeData> choices,
+        string heading)
+    {
+        if (!ValidateChoiceUi())
+        {
+            return;
+        }
+
+        headingText.text = heading;
 
         for (int i = 0; i < currentChoices.Length; i++)
         {
@@ -108,26 +167,65 @@ public class UpgradeController : MonoBehaviour
                 choice.EffectType == UpgradeEffectType.EquipWeapon;
             weaponIcons[i].gameObject.SetActive(isWeapon);
 
-            string countText = string.Empty;
-            if (isWeapon)
+            if (isWeapon && isStartingWeaponSelection)
             {
                 WeaponDefinition weapon = choice.Weapon;
                 weaponIcons[i].sprite = weapon.Icon;
                 weaponIcons[i].color = weapon.DisplayColor;
-                countText = $"  {applier.GetWeaponCount(choice)}/2";
+                labels[i].text =
+                    $"<b>{weapon.DisplayName}</b>\n" +
+                    $"<size=22><color=#9FB0BC>" +
+                    $"DMG {weapon.Damage:0}  |  " +
+                    $"RANGE {weapon.Range:0.0}\n" +
+                    $"INTERVAL {weapon.FireInterval:0.00}s" +
+                    $"</color></size>";
             }
+            else
+            {
+                string countText = string.Empty;
+                if (isWeapon)
+                {
+                    WeaponDefinition weapon = choice.Weapon;
+                    weaponIcons[i].sprite = weapon.Icon;
+                    weaponIcons[i].color = weapon.DisplayColor;
+                    countText =
+                        $"  x{applier.GetWeaponCount(choice)}" +
+                        $"  {applier.EquippedWeaponCount}/" +
+                        $"{applier.WeaponSlotCapacity} slots";
+                }
 
-            labels[i].text =
-                $"<b>{choice.Title}</b>{countText}\n" +
-                $"<size=22><color=#9FB0BC>{choice.Description}</color></size>";
+                labels[i].text =
+                    $"<b>{choice.Title}</b>{countText}\n" +
+                    $"<size=22><color=#9FB0BC>" +
+                    $"{choice.Description}</color></size>";
+            }
         }
 
         upgradePanel.transform.SetAsLastSibling();
         upgradePanel.SetActive(true);
+        choicesOpenedFrame = Time.frameCount;
         MobileControlsOverlay.SetGameplayActive(false);
         LayoutRebuilder.ForceRebuildLayoutImmediate(choicesContainer);
         Time.timeScale = 0f;
         SelectButton(buttons[0]);
+    }
+
+    private bool ValidateChoiceUi()
+    {
+        bool isValid = upgradePanel != null && headingText != null &&
+            choicesContainer != null && buttons != null &&
+            labels != null && weaponIcons != null &&
+            buttons.Length == 3 && labels.Length == 3 &&
+            weaponIcons.Length == 3;
+
+        if (!isValid)
+        {
+            Debug.LogError(
+                "UpgradeController requires a complete three-card UI.",
+                this);
+        }
+
+        return isValid;
     }
 
     private static void AddRandomChoices(
@@ -137,7 +235,7 @@ public class UpgradeController : MonoBehaviour
     {
         while (source.Count > 0 && destination.Count < targetCount)
         {
-            int randomIndex = Random.Range(0, source.Count);
+            int randomIndex = UnityEngine.Random.Range(0, source.Count);
             destination.Add(source[randomIndex]);
             source.RemoveAt(randomIndex);
         }
@@ -146,13 +244,25 @@ public class UpgradeController : MonoBehaviour
     private void Select(int index)
     {
         if (!IsOpen || index < 0 || index >= currentChoices.Length ||
-            currentChoices[index] == null)
+            currentChoices[index] == null ||
+            Time.frameCount == choicesOpenedFrame)
         {
             return;
         }
 
         applier.Apply(currentChoices[index]);
         upgradePanel.SetActive(false);
+
+        if (isStartingWeaponSelection)
+        {
+            Action callback = selectionCompleted;
+            isStartingWeaponSelection = false;
+            selectionCompleted = null;
+            EventSystem.current?.SetSelectedGameObject(null);
+            callback?.Invoke();
+            return;
+        }
+
         Time.timeScale = 1f;
         MobileControlsOverlay.SetGameplayActive(true);
         EventSystem.current?.SetSelectedGameObject(null);
