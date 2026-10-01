@@ -41,9 +41,9 @@
 - 挂在哪个 GameObject：`Enemy` Prefab。
 - 单一职责：控制一个被取出的敌人追踪玩家、按间隔造成接触伤害，并在死亡时生成经验和归还对象池。
 - Inspector 输入：`moveSpeed`、`contactDamage`、`attackInterval`。
-- 运行时输入：Spawner 通过 `Spawn` 传入玩家 `Transform` 和经验池；触发器回调传入碰撞对象；自身 Health 发布死亡事件。
+- 运行时输入：Spawner 通过 `Spawn` 传入玩家 `Transform`、经验池和 EnemyDefinition；触发器回调传入碰撞对象；自身 Health 发布死亡事件。
 - 自己保存的状态：`body`、`health`、`poolMember`、当前 `target`、`experiencePool` 和 `nextAttackTime`。
-- 输出、事件或副作用：移动敌人；调用玩家 `Health.TakeDamage`；从经验池取经验物；发布静态 `DiedGlobally`；把自己 Release 回敌人池。
+- 输出、事件或副作用：移动敌人；调用玩家 `Health.TakeDamage`；从经验池取经验物并写入该敌人的掉落外观；发布静态 `DiedGlobally`；把自己 Release 回敌人池。
 - Unity 生命周期方法及调用时机：`Awake` 缓存组件并订阅自身死亡；`OnEnable` 为复用实例重置攻击时间和血量；`FixedUpdate` 追踪玩家；`OnTriggerStay2D` 检查接触伤害；`OnDestroy` 退订事件。
 - 依赖哪些其他组件：同对象的 `Rigidbody2D`、`Health`、`PoolMember`、触发器 Collider；运行时传入的 Player Transform 和 ExperiencePool。
 - 一个正常流程：Spawner 取出 Enemy 并调用 `Spawn` -> Enemy 朝玩家移动 -> 接触玩家后按冷却扣血 -> 被子弹打到 0 -> `HandleDied` 生成经验 -> 通知击杀统计 -> 回池。
@@ -71,18 +71,18 @@
 ## 5. PlayerShooter
 
 - 挂在哪个 GameObject：`Player`。
-- 单一职责：按射击间隔寻找射程内最近敌人，并从子弹池取出子弹向目标方向发射。
-- Inspector 输入：ProjectilePool、`fireInterval`、`projectileSpeed`、`damage`、`range`。
-- 运行时输入：当前时间；所有带 Enemy 标签的激活对象位置；伤害和攻速升级数值。
-- 自己保存的状态：`nextFireTime`，以及会被升级修改的 `damage`、`fireInterval`。
-- 输出、事件或副作用：从 ProjectilePool 取对象；调用 `Projectile.Fire`；升级时修改伤害或射击间隔。
+- 单一职责：维护六个武器槽位及各自冷却，按每种武器的射程寻找目标，并从子弹池发射对应子弹。
+- Inspector 输入：ProjectilePool、六个 WeaponSlot、索敌优先带宽度、空闲扫描间隔和全局加成上限。
+- 运行时输入：当前时间；EnemyRegistry 的激活敌人；WeaponDefinition 配置；伤害、射程和攻速升级数值。
+- 自己保存的状态：已装备武器列表；每把武器的 Definition、Slot 和 NextFireTime；三种全局倍率。
+- 输出、事件或副作用：显示武器槽图标；从 ProjectilePool 取对象；调用 `Projectile.Fire`；播放射击反馈；应用全局倍率。
 - Unity 生命周期方法及调用时机：`Update` 每帧检查冷却、搜索目标并尝试发射。
-- 依赖哪些其他组件：ProjectilePool、Projectile；场景中的 Enemy 标签。
-- 一个正常流程：冷却结束 -> `FindNearestEnemy` 遍历激活敌人 -> 找到射程内最近者 -> 设置下次射击时间 -> 从池中取子弹 -> 把方向、速度和伤害交给 Projectile。
-- 一个边界情况：没有射程内敌人时不发射且不消耗冷却；攻速升级把间隔限制为最小 0.08 秒，避免零或负间隔；伤害最低为 1。
+- 依赖哪些其他组件：GameObjectPool、Projectile、WeaponDefinition、TargetSelector、EnemyRegistry 和六个带 SpriteRenderer 的槽位。
+- 一个正常流程：GameManager 请求初始武器三选一 -> UpgradeController 装配所选武器到槽位 0 -> 本局开始 -> 某把武器冷却结束 -> 按有效射程查询目标 -> 最近距离带内优先当前生命值最低者 -> 旋转对应槽位 -> 从池中取子弹 -> 传入武器和全局倍率 -> 独立记录下一次射击时间。
+- 一个边界情况：只要六个总槽位未满，任意类型都可继续装备；可以六把同类武器。第六个槽位填满后 `CanEquip` 对所有类型返回 false；没有目标时只等待短扫描间隔。
 - 如果删除这个脚本，游戏会怎样：游戏只剩移动和躲避，玩家没有击杀敌人的手段。
-- 核心问题：比较 `sqrMagnitude` 与 `range * range`，避免只为比较大小而进行平方根运算。自动射击是品类设计选择，让玩家把注意力放在走位、资源拾取和构筑选择上，并不是输入系统失效。
-- 面试讲法：当前 `FindGameObjectsWithTag` 适合小规模学习版本，但敌人规模继续扩大时，我会维护激活敌人注册表或使用空间查询，避免频繁全场遍历和数组分配。
+- 核心问题：真正稀缺的资源是六个物理槽位，不是每类武器的副本数。移除每类型上限后，三选一可以形成专精或混搭构筑，而总槽位仍提供明确边界。
+- 面试讲法：每把武器保存独立冷却和发射点，共享 EnemyRegistry 和对象池；构筑规则只限制总槽位，让玩家选择六手枪、六激光或任意组合。
 
 ## 6. Projectile
 
@@ -135,18 +135,18 @@
 ## 9. ExperiencePickup
 
 - 挂在哪个 GameObject：`ExperiencePickup` Prefab。
-- 单一职责：在玩家进入磁吸范围后靠近玩家，并在首次接触时增加经验后回池。
-- Inspector 输入：`value`、`magnetRadius`、`moveSpeed`。
-- 运行时输入：`Configure` 传入本次经验值；Player 标签对象的位置；触发器碰撞对象。
-- 自己保存的状态：PoolMember、玩家 Transform、经验值和 `collected` 标记。
-- 输出、事件或副作用：移动自身；调用 `PlayerProgress.AddExperience`；领取后回池。
-- Unity 生命周期方法及调用时机：`Awake` 缓存 PoolMember；`OnEnable` 为每次复用重置 collected 并重新寻找 Player；`Update` 处理磁吸移动；`OnTriggerEnter2D` 处理领取。
-- 依赖哪些其他组件：PoolMember、Collider2D；Player 标签和 PlayerProgress。
-- 一个正常流程：敌人死亡 -> 经验池 Get -> `Configure(1)` -> 玩家进入半径后经验物靠近 -> 触发 Player -> 增加经验 -> 回池。
-- 一个边界情况：找不到 Player 时不移动；非 Player 碰撞直接忽略；`collected` 在加经验前置为 true，防止同一激活周期多次触发导致重复加经验。
+- 单一职责：应用本次掉落的经验值和视觉样式，在玩家进入磁吸范围后靠近，并在首次接触时增加经验后回池。
+- Inspector 输入：默认 `value`、`fallbackMagnetRadius`、`moveSpeed`。
+- 运行时输入：`Configure` 传入经验值、形状、颜色和大小；Player 标签对象的位置；触发器碰撞对象。
+- 自己保存的状态：PoolMember、SpriteRenderer、Prefab 原始缩放、玩家 Transform、经验值和 `collected` 标记；静态缓存保存三种程序化 Sprite。
+- 输出、事件或副作用：生成并缓存图标纹理；每次复用覆盖 Sprite、颜色和缩放；移动自身；调用 `PlayerProgress.AddExperience`；领取后回池。
+- Unity 生命周期方法及调用时机：`Awake` 缓存组件与原始缩放；`OnEnable` 为每次复用重置 collected 并重新寻找 Player；`Update` 处理磁吸移动；`OnTriggerEnter2D` 处理领取。
+- 依赖哪些其他组件：PoolMember、SpriteRenderer、Collider2D；EnemyDefinition 传入的掉落样式；Player 标签和 PlayerProgress。
+- 一个正常流程：敌人死亡 -> 经验池 Get -> `Configure(value, shape, color, scale)` 覆盖上次状态 -> 玩家进入半径后靠近 -> 触发 Player -> 增加经验 -> 回池。
+- 一个边界情况：同一个池对象上次可能是紫色六边形，本次可能是绿色菱形，因此 Configure 必须同时覆盖数值和全部视觉字段；`collected` 防止同一周期重复加经验。
 - 如果删除这个脚本，游戏会怎样：经验物可能显示在场景中，但不会吸附、增加经验或正确回池。
-- 核心问题：吸附只负责移动，真正领取由触发器确认；`collected` 与 PoolMember 的防重复分别保护“经验只加一次”和“对象只回池一次”。
-- 面试讲法：池化对象的状态必须在 `OnEnable` 重置，这里最关键的是 collected，否则第二次取出后可能永远无法领取。
+- 核心问题：吸附只负责移动，真正领取由触发器确认；池化实例的逻辑状态和视觉状态都必须重置，不能只改经验值。
+- 面试讲法：三种敌人仍共享一个经验池，EnemyDefinition 提供掉落样式，Configure 覆盖复用实例；三个 64×64 Sprite 首次使用时生成并缓存，避免每次掉落创建纹理。
 
 ## 10. PlayerProgress
 
@@ -166,7 +166,7 @@
 
 ## 11. PlayerUpgradeData
 
-- 挂在哪个 GameObject：不挂载；它是 ScriptableObject 类型，当前对应 `Assets/Data` 下五个升级 `.asset`。
+- 挂在哪个 GameObject：不挂载；它是 ScriptableObject 类型，当前场景使用 `Assets/Data` 下十个升级 `.asset`。
 - 单一职责：保存一项升级的显示文本、效果类型和数值，作为可复用、可在 Inspector 编辑的配置资产。
 - Inspector 输入：每个资产的 `title`、`description`、`effectType`、`value`。
 - 运行时输入：无；UpgradeController 读取资产，PlayerUpgradeApplier 消费资产。
@@ -176,7 +176,7 @@
 - 依赖哪些其他组件：`UpgradeEffectType` enum；不依赖场景对象。
 - 一个正常流程：设计者在 Project 中创建升级资产 -> 配置 Damage 和 10 -> UpgradeController 随机选到它并显示文字 -> Applier 根据类型给 Shooter 增加伤害。
 - 一个边界情况：资产配置了负数或不合理值时，具体组件的 Add/Reduce 方法会做部分下限保护，但数据资产本身不校验所有设计规则；发布前需要检查配置。
-- 如果删除这个脚本，游戏会怎样：五个升级资产失去类型，UpgradeController 不能以数据驱动方式读取升级内容。
+- 如果删除这个脚本，游戏会怎样：升级资产失去类型，UpgradeController 不能以数据驱动方式读取升级内容。
 - 核心问题：使用数据资产而不是把内容写死在按钮中，可以新增/调整升级而不修改 UI 流程代码，并让同一份配置被不同界面或系统复用。
 - 面试讲法：ScriptableObject 在这里承担静态配置，而玩家本局已经获得的加成仍保存在运行时组件中，避免修改共享资产污染后续游戏。
 
@@ -186,31 +186,31 @@
 - 单一职责：把 `PlayerUpgradeData` 描述的效果路由到真正拥有该数值的玩家组件。
 - Inspector 输入：PlayerMovement、PlayerShooter、Health 引用。
 - 运行时输入：`Apply(PlayerUpgradeData data)`。
-- 自己保存的状态：三个组件引用；不保存升级数值副本。
-- 输出、事件或副作用：根据 effectType 调用加伤害、减射击间隔、治疗、加移速或加最大生命的方法。
+- 自己保存的状态：Movement、Shooter、Health 和 PickupRange 引用；不保存升级数值副本。
+- 输出、事件或副作用：根据 effectType 路由属性提升或武器装配，并向 UI 提供单类武器数量和总槽位使用量。
 - Unity 生命周期方法及调用时机：无自定义生命周期方法；只在玩家选择升级时被 UpgradeController 调用。
-- 依赖哪些其他组件：PlayerMovement、PlayerShooter、Health、PlayerUpgradeData、UpgradeEffectType。
+- 依赖哪些其他组件：PlayerMovement、PlayerShooter、Health、PlayerPickupRange、PlayerUpgradeData、UpgradeEffectType。
 - 一个正常流程：玩家点击 Damage 选项 -> UpgradeController 传入对应 Data -> Applier 匹配 Damage -> 调用 `PlayerShooter.AddDamage(value)`。
 - 一个边界情况：新增 enum 项但忘记在 switch 中添加 case 时，升级看似可选却不会生效；data 或组件引用为空时当前实现会抛空引用，因此 Inspector 配置必须完整。
 - 如果删除这个脚本，游戏会怎样：三选一仍可显示和点击，但选择无法真正改变玩家属性。
 - 核心问题：它隔离了 UI 流程与玩家具体组件。UpgradeController 不需要知道伤害存在 Shooter、生命存在 Health。
-- 面试讲法：这是一个简单的应用层路由器；效果继续增多时可以进一步改为策略对象，但当前五种效果下 switch 更直接、可读。
+- 面试讲法：这是一个简单的应用层路由器；效果继续增多时可以进一步改为策略对象，但当前规模下 switch 更直接、可读。
 
 ## 13. UpgradeController
 
 - 挂在哪个 GameObject：当前挂在 `Player`。
-- 单一职责：响应升级请求，从配置池中随机生成三个不重复选项，控制升级面板，并把玩家选择交给 Applier。
+- 单一职责：提供开局固定武器三选一，并响应后续升级请求生成候选；控制同一个选择面板并把结果交给 Applier。
 - Inspector 输入：PlayerProgress、PlayerUpgradeApplier、UpgradePanel、三个 Button、三个 TMP Label、可用 PlayerUpgradeData 数组。
-- 运行时输入：`LevelUpRequested` 事件；按钮点击索引；随机数。
-- 自己保存的状态：三个 `currentChoices`；面板激活状态可通过 `IsOpen` 查询。
-- 输出、事件或副作用：修改三个标签文字；显示/隐藏并置顶升级面板；暂停/恢复 `Time.timeScale`；调用 Applier。
+- 运行时输入：GameManager 的初始选枪请求；`LevelUpRequested` 事件；按钮点击索引；随机数。
+- 自己保存的状态：三个 `currentChoices`；是否处于初始选枪；选择完成回调；面板打开帧；面板激活状态可通过 `IsOpen` 查询。
+- 输出、事件或副作用：修改三个标签和武器图标；显示/隐藏并置顶升级面板；暂停/恢复 `Time.timeScale`；调用 Applier；初始选择后回调 GameManager。
 - Unity 生命周期方法及调用时机：`Awake` 初始隐藏面板并注册按钮监听；`OnEnable` 订阅升级请求；`OnDisable` 退订。
 - 依赖哪些其他组件：PlayerProgress、PlayerUpgradeApplier、Button、TMP_Text、升级数据资产。
-- 一个正常流程：Progress 发布 LevelUpRequested -> 复制 availableUpgrades -> 随机抽取后从临时列表移除，保证三项不重复 -> 写入按钮标签 -> 面板置顶并暂停 -> 玩家点击 -> Apply -> 关闭面板并恢复时间。
-- 一个边界情况：升级资产少于 3、按钮或标签不是 3 个时输出错误并停止打开；面板未打开或索引越界时 Select 直接返回；循环中用局部 `CapturedIndex`，避免所有 lambda 最终引用同一个循环变量。
+- 一个正常流程：StartRun 请求初始选枪 -> 固定展示三种武器和数值 -> 玩家选择 -> Apply 装入槽位 0 -> 回调 GameManager 开局；后续升级再按等级筛选候选并恢复时间。
+- 一个边界情况：初始武器不是三种不同类型、三卡 UI 不完整、面板已打开或已有武器时拒绝打开；打开面板的同一帧禁止提交，避免 Enter 同时开始并误选第一张卡。
 - 如果删除这个脚本，游戏会怎样：等级仍能增加，但不会出现三选一，也无法把升级数据应用给玩家。
-- 核心问题：打开选择时暂停玩法，避免玩家阅读和选择期间仍被敌人攻击；面板 `SetAsLastSibling` 保证绘制和点击优先级高于 HUD。
-- 面试讲法：我用“复制列表、抽一个删一个”的方式保证本次三个候选不重复，而不修改原始配置数组。
+- 核心问题：初始选择和升级选择复用同一份武器数据与 UI；选择时暂停玩法，六槽填满后武器候选全部失效并由普通升级补位。
+- 面试讲法：我把隐藏的默认手枪改成显式初始选择，并用回调让 GameManager 在选中后才开局；后续候选先过滤再用“抽一个删一个”保证不重复。
 
 ## 14. HudController
 
@@ -234,15 +234,15 @@
 - 单一职责：编排一局游戏的顶层状态，包括开始、暂停、升级暂停协作、死亡结算、重开、计时、击杀统计和最高纪录。
 - Inspector 输入：PlayerMovement、PlayerShooter、EnemySpawner、Player Health、PlayerProgress、UpgradeController、HudController；开始/暂停/结算面板和文本；三个按钮。
 - 运行时输入：Enter、Escape、R 键；按钮点击；Player Health.Died；EnemyController.DiedGlobally；时间。
-- 自己保存的状态：`hasStarted`、`isPaused`、`isGameOver`、`elapsedTime`、`killCount`。
+- 自己保存的状态：`hasStarted`、`isChoosingStartingWeapon`、`isPaused`、`isGameOver`、`elapsedTime`、`killCount`。
 - 输出、事件或副作用：启停玩法组件；设置 `Time.timeScale`；切换 UI 面板；更新 HUD；通过 PlayerPrefs 读写最高时间和击杀；重载当前场景。
 - Unity 生命周期方法及调用时机：`Awake` 建立初始暂停状态和按钮监听；`Start` 初始化 HUD、订阅事件并读取纪录；`Update` 处理快捷键和计时；`OnDestroy` 退订死亡事件。
 - 依赖哪些其他组件：几乎所有顶层玩法控制器、UI 和 SceneManager，但不直接实现它们的内部算法。
-- 一个正常流程：场景加载后暂停并显示 Start -> Enter 调用 StartRun -> 启用移动/射击/刷怪 -> 统计时间和击杀 -> 玩家死亡 -> 停用玩法、保存纪录、显示结算 -> R 重载 Main。
-- 一个边界情况：重复 StartRun、重复死亡和无效 Resume 都通过状态条件提前返回；升级面板打开时 Escape 不切换暂停，避免两个暂停来源互相覆盖；销毁时必须退订静态敌人死亡事件。
+- 一个正常流程：场景加载后暂停并显示 Start -> Enter 调用 StartRun -> 打开初始武器三选一 -> 选择回调 BeginRun -> 启用移动/射击/刷怪并开始计时 -> 玩家死亡 -> 保存纪录并结算 -> R 重载 Main。
+- 一个边界情况：选枪中或已经开始时重复 StartRun 会提前返回；选枪失败会回到开始界面；升级面板打开时 Escape 不切换暂停，避免两个暂停来源互相覆盖。
 - 如果删除这个脚本，游戏会怎样：各子系统仍存在，但没有统一的一局状态：开局面板、暂停、结算、纪录、重开和组件启停都会失去协调。
 - 核心问题：它应该管理跨系统的“局状态”和编排，不应该管理玩家移动公式、子弹碰撞、敌人寻路或经验阈值等局部细节。
-- 面试讲法：GameManager 是有限状态的协调者。当前用布尔值适合状态较少的版本；流程继续扩大时可改成显式 enum 状态机，减少非法组合。
+- 面试讲法：GameManager 是有限状态的协调者。新增选枪阶段后仍用少量互斥布尔值和入口保护；流程继续扩大时会改成显式 enum 状态机，减少非法组合。
 
 ## 16. UpgradeEffectType
 

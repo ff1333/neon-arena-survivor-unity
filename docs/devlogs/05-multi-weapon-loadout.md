@@ -1,5 +1,10 @@
 # Multi-Weapon Loadout
 
+> Historical note: this log records the original `v1.0.0` two-per-type rule.
+> The later `feature/free-weapon-loadout` iteration removes that per-type cap
+> and keeps only the six-slot total limit. See
+> `docs/devlogs/13-free-weapon-loadout.md` for the current rule and evidence.
+
 Date: 2026-09-27
 
 Branch: `feature/multi-weapon-loadout`
