@@ -28,9 +28,9 @@ Release date: 2026-10-02
 ## Verification
 
 - Unity automated release-boundary suite: `24/24 PASS`.
-- Windows standalone build and runtime: pending.
-- WebGL build and browser runtime: pending.
-- Android APK build: pending.
+- Windows standalone build and startup smoke test: PASS.
+- WebGL build and browser gameplay smoke test: PASS.
+- Android APK build: PASS.
 - Android physical-device smoke test: required after installing the v1.1.0 APK.
 
 ## Known Limits
