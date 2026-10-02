@@ -6,7 +6,8 @@
 
 ## 下载与版本
 
-- [GitHub Release v1.0.0](https://github.com/ff1333/neon-arena-survivor-unity/releases/tag/v1.0.0)
+- [GitHub Release v1.1.0](https://github.com/ff1333/neon-arena-survivor-unity/releases/tag/v1.1.0)（本轮发布完成后生效）
+- [GitHub Release v1.0.0](https://github.com/ff1333/neon-arena-survivor-unity/releases/tag/v1.0.0)（历史稳定版）
 - Release 附件包含 Windows、WebGL 和 Android 测试包，以及 SHA-256 校验文件。
 - Android APK 已在真实 Android 设备上完成安装、移动和主要流程试玩。
 - 在线 WebGL 试玩与演示视频将在对应公开页面完成后补充链接。
@@ -114,7 +115,7 @@ docs/
 - 角色和敌人采用简洁几何视觉，重点展示玩法代码、工程拆分和多平台交付。
 - Profiler 前后截图来自不同玩法规模的提交，只能证明实施了对象池和记录了代表帧，不能用于声称确定的性能提升比例。
 - Android 已完成一次真实设备试玩，但尚未覆盖多型号兼容性、长时间压力和商店签名发布测试。
-- 当前源码已移除单种武器两把的限制；公开的 `v1.0.0` 构建仍使用旧规则，更新后的构建将在本轮验证完成后发布。
+- `v1.1.0` 新增开局武器三选一、自由六槽武器构筑和敌人专属经验物；`v1.0.0` 保留原有两把同类武器上限。
 
 ## 开发记录
 
@@ -125,3 +126,7 @@ docs/
 - [十分钟发布候选测试](docs/devlogs/10-ten-minute-release-candidate.md)
 - [多平台发布验证](docs/devlogs/11-multiplatform-release.md)
 - [Android 浮动摇杆](docs/devlogs/12-android-touch-controls.md)
+- [自由武器构筑](docs/devlogs/13-free-weapon-loadout.md)
+- [开局武器选择](docs/devlogs/14-starting-weapon-choice.md)
+- [敌人专属经验物](docs/devlogs/15-enemy-specific-experience-visuals.md)
+- [v1.1.0 多平台发布](docs/devlogs/16-v1.1.0-multiplatform-release.md)

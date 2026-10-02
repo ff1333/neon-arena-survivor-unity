@@ -32,15 +32,17 @@ Move through a bounded arena while independent weapons automatically acquire tar
 ## Controls
 
 - WASD / Arrow keys: Move
-- Enter: Start
+- Enter: Open the starting weapon selection
 - Esc: Pause / Resume
 - R: Restart after game over
 - Mouse: UI buttons and upgrade choices
 
 ## Features
 
-- Pistol, SMG and Laser with independent range, fire rate and cooldown
+- Pistol, SMG and Laser starting choice with independent range, fire rate and cooldown
+- Six total weapon slots with unrestricted same-type specialization
 - Chaser, Dasher and Berserker enemy behaviors
+- Distinct experience pickup shapes for each enemy type
 - ScriptableObject-driven weapon, enemy and upgrade data
 - Object pools for projectiles, enemies, experience pickups and spawn warnings
 - Upgrade filtering, arena bounds, camera follow and combat feedback
@@ -55,7 +57,7 @@ This is a personal learning and portfolio rebuild, not a commercial release.
 ## 上传文件
 
 ```text
-D:\software\documents\unity_games\projects\learning\NeonArenaRebuild\Builds\WebGL\NeonArenaRebuild-WebGL-v1.0.0.zip
+D:\software\documents\unity_games\projects\learning\NeonArenaRebuild\Builds\Packages\v1.1.0\NeonArenaRebuild-WebGL-v1.1.0.zip
 ```
 
 上传完成后勾选 `This file will be played in the browser`。如果实际 zip 位于其他目录，必须先确认压缩包根目录直接包含 `index.html`，不能盲目照抄路径。
