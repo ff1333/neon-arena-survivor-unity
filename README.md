@@ -6,10 +6,10 @@
 
 ## 下载与版本
 
-- [GitHub Release v1.1.0](https://github.com/ff1333/neon-arena-survivor-unity/releases/tag/v1.1.0)（本轮发布完成后生效）
+- [GitHub Release v1.1.0](https://github.com/ff1333/neon-arena-survivor-unity/releases/tag/v1.1.0)（当前版本）
 - [GitHub Release v1.0.0](https://github.com/ff1333/neon-arena-survivor-unity/releases/tag/v1.0.0)（历史稳定版）
 - Release 附件包含 Windows、WebGL 和 Android 测试包，以及 SHA-256 校验文件。
-- Android APK 已在真实 Android 设备上完成安装、移动和主要流程试玩。
+- `v1.1.0` Android APK 已在真实 Android 设备上完成安装、开局选武器、移动和主要流程试玩。
 - 在线 WebGL 试玩与演示视频将在对应公开页面完成后补充链接。
 
 ## 操作
