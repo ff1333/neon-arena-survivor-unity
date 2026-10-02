@@ -134,7 +134,7 @@ Inspector 引用、`GetComponent`、按标签查找和运行时传参解决的�
 Enemy Health.Died
 -> EnemyController.HandleDied
 -> ExperiencePool.Get 在死亡位置生成 ExperiencePickup
--> ExperiencePickup.Configure 设置经验值
+-> ExperiencePickup.Configure 设置经验值、敌人专属形状、颜色和大小
 -> 玩家进入 magnetRadius 后 ExperiencePickup.Update 吸附
 -> Unity 调用 ExperiencePickup.OnTriggerEnter2D
 -> PlayerProgress.AddExperience
@@ -156,7 +156,7 @@ Enemy Health.Died
 |---:|---|---|---|---|
 | 1 | Enemy Health -> EnemyController | `Died` C# 事件 | 无参数 | EnemyController.Awake 订阅同对象 Health |
 | 2 | EnemyController -> ExperiencePool | 直接调用 `Get` | 死亡位置 `Vector3` 和旋转 | experiencePool 由 EnemySpawner 在 `Spawn` 时传入 |
-| 3 | EnemyController -> ExperiencePickup | GetComponent 后直接调用 `Configure(1)` | `int` 经验值 | 刚从经验池取得的 GameObject |
+| 3 | EnemyController -> ExperiencePickup | GetComponent 后直接调用 `Configure(...)` | 经验值、形状、颜色和大小，均来自 EnemyDefinition | 刚从经验池取得的 GameObject |
 | 4 | ExperiencePickup.OnEnable -> Player | 标签查找 | Player Transform | `FindGameObjectWithTag("Player")` |
 | 5 | Unity -> `ExperiencePickup.Update` | Unity 每帧回调 | Player 与经验物的位置 | 激活的 ExperiencePickup |
 | 6 | ExperiencePickup -> Transform | 距离满足后直接修改位置 | `MoveTowards` 计算的新位置 | 缓存的 Player Transform |

@@ -21,6 +21,9 @@ MonoBehaviour:
   moveSpeed: 2
   contactDamage: 10
   experienceReward: 1
+  experiencePickupShape: 0
+  experiencePickupColor: {r: 0.2, g: 1, b: 0.45, a: 1}
+  experiencePickupScale: 1
   dashInterval: 2.4
   dashTelegraphDuration: 0.45
   dashDuration: 0.32

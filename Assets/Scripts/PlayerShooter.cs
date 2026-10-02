@@ -12,13 +12,11 @@ public class PlayerShooter : MonoBehaviour
 
     [Header("References")]
     [SerializeField] private GameObjectPool projectilePool;
-    [SerializeField] private WeaponDefinition startingWeapon;
     [SerializeField] private Transform[] weaponSlots;
 
     [Header("Targeting")]
     [SerializeField, Min(0f)] private float priorityBandWidth = 1.5f;
     [SerializeField, Min(0.02f)] private float idleScanInterval = 0.1f;
-    [SerializeField, Range(1, 2)] private int maximumCopiesPerType = 2;
 
     [Header("Global Upgrades")]
     [SerializeField, Min(1f)] private float damageMultiplier = 1f;
@@ -32,6 +30,7 @@ public class PlayerShooter : MonoBehaviour
         new List<EquippedWeapon>(6);
 
     public int EquippedCount => equippedWeapons.Count;
+    public int WeaponSlotCapacity => weaponSlots?.Length ?? 0;
     public float DamageMultiplier => damageMultiplier;
     public float RangeMultiplier => rangeMultiplier;
     public float AttackSpeedMultiplier => attackSpeedMultiplier;
@@ -55,11 +54,11 @@ public class PlayerShooter : MonoBehaviour
         attackSpeedMultiplier = Mathf.Clamp(
             attackSpeedMultiplier, 1f, maximumAttackSpeedMultiplier);
 
-        if (projectilePool == null || startingWeapon == null ||
+        if (projectilePool == null ||
             weaponSlots == null || weaponSlots.Length != 6)
         {
             Debug.LogError(
-                "PlayerShooter requires a projectile pool, starting weapon and 6 slots.",
+                "PlayerShooter requires a projectile pool and 6 slots.",
                 this);
             enabled = false;
             return;
@@ -79,8 +78,6 @@ public class PlayerShooter : MonoBehaviour
 
             slotRenderer.enabled = false;
         }
-
-        EquipWeapon(startingWeapon);
     }
 
     private void Update()
@@ -130,8 +127,8 @@ public class PlayerShooter : MonoBehaviour
     public bool CanEquip(WeaponDefinition definition)
     {
         return definition != null &&
-               equippedWeapons.Count < weaponSlots.Length &&
-               GetEquippedCount(definition.WeaponType) < maximumCopiesPerType;
+               weaponSlots != null &&
+               equippedWeapons.Count < weaponSlots.Length;
     }
 
     public bool EquipWeapon(WeaponDefinition definition)

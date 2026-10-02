@@ -232,7 +232,10 @@ public class EnemyController : MonoBehaviour
                 transform.position,
                 Quaternion.identity);
             pickupObject.GetComponent<ExperiencePickup>().Configure(
-                definition.ExperienceReward);
+                definition.ExperienceReward,
+                definition.ExperiencePickupShape,
+                definition.ExperiencePickupColor,
+                definition.ExperiencePickupScale);
         }
 
         CombatFeedback.Instance?.PlayEnemyDeath(

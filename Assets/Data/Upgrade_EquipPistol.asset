@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: Upgrade_EquipPistol
   m_EditorClassIdentifier: Assembly-CSharp::PlayerUpgradeData
   title: Equip Pistol
-  description: Add one pistol, maximum 2.
+  description: Add one pistol. Limited only by the 6 total slots.
   effectType: 7
   value: 0
   weapon: {fileID: 11400000, guid: d508886178115634d831932c4272aa51, type: 2}

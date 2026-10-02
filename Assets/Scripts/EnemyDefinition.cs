@@ -1,5 +1,12 @@
 using UnityEngine;
 
+public enum ExperiencePickupShape
+{
+    Diamond,
+    Arrow,
+    Hexagon
+}
+
 [CreateAssetMenu(menuName = "Neon Arena/Enemy Definition")]
 public class EnemyDefinition : ScriptableObject
 {
@@ -15,6 +22,11 @@ public class EnemyDefinition : ScriptableObject
     [SerializeField, Min(0.1f)] private float moveSpeed = 2f;
     [SerializeField, Min(0f)] private float contactDamage = 10f;
     [SerializeField, Min(1)] private int experienceReward = 1;
+
+    [Header("Experience Drop")]
+    [SerializeField] private ExperiencePickupShape experiencePickupShape;
+    [SerializeField] private Color experiencePickupColor = Color.green;
+    [SerializeField, Min(0.5f)] private float experiencePickupScale = 1f;
 
     [Header("Dasher Only")]
     [SerializeField, Min(0.1f)] private float dashInterval = 2.4f;
@@ -37,6 +49,10 @@ public class EnemyDefinition : ScriptableObject
     public float MoveSpeed => moveSpeed;
     public float ContactDamage => contactDamage;
     public int ExperienceReward => experienceReward;
+    public ExperiencePickupShape ExperiencePickupShape =>
+        experiencePickupShape;
+    public Color ExperiencePickupColor => experiencePickupColor;
+    public float ExperiencePickupScale => experiencePickupScale;
     public float DashInterval => dashInterval;
     public float DashTelegraphDuration => dashTelegraphDuration;
     public float DashDuration => dashDuration;
