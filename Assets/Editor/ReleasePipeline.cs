@@ -12,10 +12,12 @@ using UnityEngine;
 
 public static class ReleasePipeline
 {
+    private const string Version = "1.1.0";
+    private const string ReleaseBranch = "release/v1.1.0";
     private const string MainScene = "Assets/Scenes/Main.unity";
     private const string Identifier = "com.ff1333.neonarenarebuild";
     private const string VerificationReport =
-        "docs/devlogs/11-multiplatform-release.md";
+        "docs/devlogs/16-v1.1.0-multiplatform-release.md";
     private const string ManualResultsHeading = "## Platform Builds";
 
     [MenuItem("Build/Neon Arena/Configure Release Settings")]
@@ -23,7 +25,7 @@ public static class ReleasePipeline
     {
         PlayerSettings.companyName = "FF1333";
         PlayerSettings.productName = "Neon Arena Rebuild";
-        PlayerSettings.bundleVersion = "1.0.0";
+        PlayerSettings.bundleVersion = Version;
         PlayerSettings.defaultScreenWidth = 1280;
         PlayerSettings.defaultScreenHeight = 720;
         PlayerSettings.defaultWebScreenWidth = 960;
@@ -41,7 +43,7 @@ public static class ReleasePipeline
             NamedBuildTarget.Android,
             Identifier);
 
-        PlayerSettings.Android.bundleVersionCode = 1;
+        PlayerSettings.Android.bundleVersionCode = 2;
         PlayerSettings.Android.minSdkVersion = AndroidSdkVersions.AndroidApiLevel25;
         PlayerSettings.Android.targetSdkVersion = AndroidSdkVersions.AndroidApiLevel36;
         PlayerSettings.Android.targetArchitectures = AndroidArchitecture.ARM64;
@@ -92,8 +94,10 @@ public static class ReleasePipeline
             PlayerSettings.companyName == "FF1333", passed, failed);
         Verify("Product name is release-ready",
             PlayerSettings.productName == "Neon Arena Rebuild", passed, failed);
-        Verify("Version is 1.0.0",
-            PlayerSettings.bundleVersion == "1.0.0", passed, failed);
+        Verify($"Version is {Version}",
+            PlayerSettings.bundleVersion == Version, passed, failed);
+        Verify("Android version code is 2",
+            PlayerSettings.Android.bundleVersionCode == 2, passed, failed);
         Verify("Android identifier is release-ready",
             PlayerSettings.GetApplicationIdentifier(NamedBuildTarget.Android) ==
             Identifier, passed, failed);
@@ -123,23 +127,23 @@ public static class ReleasePipeline
         ExitBatchMode(failed.Count == 0);
     }
 
-    [MenuItem("Build/Neon Arena/Build Windows v1.0.0")]
+    [MenuItem("Build/Neon Arena/Build Windows " + Version)]
     public static void BuildWindows()
     {
         ConfigureReleaseSettings();
         Build(
             BuildTarget.StandaloneWindows64,
-            "Builds/Windows/v1.0.0/NeonArenaRebuild.exe");
+            $"Builds/Windows/v{Version}/NeonArenaRebuild.exe");
     }
 
-    [MenuItem("Build/Neon Arena/Build WebGL v1.0.0")]
+    [MenuItem("Build/Neon Arena/Build WebGL " + Version)]
     public static void BuildWebGL()
     {
         ConfigureReleaseSettings();
-        Build(BuildTarget.WebGL, "Builds/WebGL/v1.0.0");
+        Build(BuildTarget.WebGL, $"Builds/WebGL/v{Version}");
     }
 
-    [MenuItem("Build/Neon Arena/Build Android Test APK v1.0.0")]
+    [MenuItem("Build/Neon Arena/Build Android APK " + Version)]
     public static void BuildAndroid()
     {
         ConfigureJavaProxyFromSystem();
@@ -147,7 +151,7 @@ public static class ReleasePipeline
         EditorUserBuildSettings.buildAppBundle = false;
         Build(
             BuildTarget.Android,
-            "Builds/Android/v1.0.0/NeonArenaRebuild-v1.0.0.apk");
+            $"Builds/Android/v{Version}/NeonArenaRebuild-v{Version}.apk");
     }
 
     private static void ConfigureJavaProxyFromSystem()
@@ -530,7 +534,7 @@ public static class ReleasePipeline
         report.AppendLine();
         report.AppendLine($"Date: {DateTime.Now:yyyy-MM-dd}");
         report.AppendLine();
-        report.AppendLine("Branch: `release/v1.0.0-multiplatform`");
+        report.AppendLine($"Branch: `{ReleaseBranch}`");
         report.AppendLine();
         report.AppendLine("## Automated Boundary Verification");
         report.AppendLine();
