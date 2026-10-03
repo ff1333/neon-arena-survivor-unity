@@ -6,6 +6,8 @@
 - 回池清除拖尾，避免再次发射连接旧位置；数字数量有固定上限。
 - 保留三武器、六槽装配、原升级与三类敌人玩法，不改变平衡数值。
 
-验证：发布边界自动检查与 Windows Player 流程截图，详见 docs/test-results/v1.2.0。
+验证：24 项发布边界检查通过，Windows Player 和 Edge 浏览器流程及截图已检查。
+三平台构建全部成功、零错误；Windows/WebGL 各 1 条未使用字段告警，Android 26 条告警
+（24 条 SDK 网络检查、1 条调试符号设置、1 条未使用字段）。详见 docs/test-results/v1.2.0。
 新版 Android 真机验收需在发布前根据实际试玩填写；旧版通过不代表此版通过。
 附件为 Windows ZIP、WebGL ZIP、Android 测试 APK 和 SHA256SUMS.txt。
