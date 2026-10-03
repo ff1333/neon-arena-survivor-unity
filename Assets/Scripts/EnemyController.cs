@@ -87,6 +87,8 @@ public class EnemyController : MonoBehaviour
         target = newTarget;
         experiencePool = newExperiencePool;
         definition = newDefinition;
+        var appearance = Resources.Load<Sprite>("Polish/" + definition.BehaviorType);
+        if (appearance != null) spriteRenderer.sprite = appearance;
         hasHitPlayer = false;
         isPreparingDash = false;
         isDashing = false;

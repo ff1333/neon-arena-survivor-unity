@@ -28,6 +28,8 @@ public class UpgradeController : MonoBehaviour
 
     private void Awake()
     {
+        foreach (var text in upgradePanel.GetComponentsInChildren<TMP_Text>(true))
+            if (text.name == "TitleText") text.gameObject.SetActive(false);
         upgradePanel.SetActive(false);
 
         for (int i = 0; i < buttons.Length; i++)

@@ -1,4 +1,6 @@
 using UnityEngine;
+using TMPro;
+using UnityEngine.UI;
 
 [RequireComponent(typeof(AudioSource), typeof(ParticleSystem))]
 public class CombatFeedback : MonoBehaviour
@@ -20,6 +22,11 @@ public class CombatFeedback : MonoBehaviour
     private AudioClip levelUpClip;
     private float nextShotSoundTime;
     private float nextHitSoundTime;
+    private readonly TextMeshPro[] damageLabels = new TextMeshPro[24];
+    private readonly float[] damageTimes = new float[24];
+    private readonly Image[] hurtEdges = new Image[4];
+    private int damageCursor;
+    private float hurtPulse;
 
     public static CombatFeedback Instance { get; private set; }
 
@@ -38,6 +45,7 @@ public class CombatFeedback : MonoBehaviour
         ConfigureAudioSource();
         ConfigureParticles();
         CreateClips();
+        BuildVisualFeedback();
     }
 
     private void OnDestroy()
@@ -85,6 +93,7 @@ public class CombatFeedback : MonoBehaviour
 
     public void PlayPlayerHit(Vector3 position)
     {
+        hurtPulse = 1f;
         EmitBurst(position, new Color(1f, 0.2f, 0.35f), 14, 0.18f);
         audioSource.PlayOneShot(playerHitClip);
     }
@@ -136,7 +145,80 @@ public class CombatFeedback : MonoBehaviour
         ParticleSystemRenderer particleRenderer =
             feedbackParticles.GetComponent<ParticleSystemRenderer>();
         particleRenderer.sortingOrder = 20;
+        particleRenderer.sharedMaterial = ArenaPresentation.TrailMaterial;
         feedbackParticles.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
+    }
+
+    private void BuildVisualFeedback()
+    {
+        var existing = FindFirstObjectByType<TMP_Text>(FindObjectsInactive.Include);
+        for (var i = 0; i < damageLabels.Length; i++)
+        {
+            var label = new GameObject("Damage " + i).AddComponent<TextMeshPro>();
+            label.transform.SetParent(transform,false);
+            if (existing != null) label.font = existing.font;
+            label.fontSize = 4f;
+            label.alignment = TextAlignmentOptions.Center;
+            label.rectTransform.sizeDelta = new Vector2(2f,.7f);
+            label.GetComponent<MeshRenderer>().sortingOrder = 40;
+            label.gameObject.SetActive(false);
+            damageLabels[i] = label;
+        }
+        var canvasObject = new GameObject("Damage Overlay",typeof(Canvas));
+        canvasObject.transform.SetParent(transform,false);
+        var canvas = canvasObject.GetComponent<Canvas>();
+        canvas.renderMode = RenderMode.ScreenSpaceOverlay;
+        canvas.sortingOrder = 30;
+        var edges = new[] {new Vector4(0,0,.012f,1),new Vector4(.988f,0,1,1),new Vector4(0,0,1,.02f),new Vector4(0,.98f,1,1)};
+        for (var i = 0; i < edges.Length; i++)
+        {
+            var edge = new GameObject("Edge",typeof(RectTransform),typeof(Image)).GetComponent<Image>();
+            edge.transform.SetParent(canvas.transform,false);
+            edge.raycastTarget = false;
+            edge.color = Color.clear;
+            edge.rectTransform.anchorMin = new Vector2(edges[i].x,edges[i].y);
+            edge.rectTransform.anchorMax = new Vector2(edges[i].z,edges[i].w);
+            edge.rectTransform.offsetMin = edge.rectTransform.offsetMax = Vector2.zero;
+            hurtEdges[i] = edge;
+        }
+    }
+
+    public void ShowDamage(Vector3 position, float damage, bool lethal)
+    {
+        var index = damageCursor;
+        damageCursor = (damageCursor + 1) % damageLabels.Length;
+        var label = damageLabels[index];
+        label.transform.position = position + new Vector3(Random.Range(-.2f,.2f),.45f,-.2f);
+        label.text = Mathf.CeilToInt(damage).ToString();
+        label.color = lethal ? new Color(1f,.82f,.35f) : Color.white;
+        label.fontSize = lethal ? 5f : 4f;
+        damageTimes[index] = .55f;
+        label.gameObject.SetActive(true);
+    }
+
+    public void PlayMuzzle(Vector3 position, Vector2 direction, Color color)
+    {
+        feedbackParticles.Emit(new ParticleSystem.EmitParams {
+            position = position, velocity = (Vector3)direction * 2f,
+            startColor = color, startSize = .19f, startLifetime = .08f
+        }, 2);
+    }
+
+    private void Update()
+    {
+        for (var i = 0; i < damageLabels.Length; i++)
+        {
+            if (damageTimes[i] <= 0) continue;
+            damageTimes[i] -= Time.deltaTime;
+            var label = damageLabels[i];
+            label.transform.position += Vector3.up * Time.deltaTime * 1.1f;
+            var color = label.color;
+            color.a = Mathf.Clamp01(damageTimes[i] / .25f);
+            label.color = color;
+            if (damageTimes[i] <= 0) label.gameObject.SetActive(false);
+        }
+        hurtPulse = Mathf.Max(0f,hurtPulse-Time.unscaledDeltaTime * 2.5f);
+        foreach (var edge in hurtEdges) edge.color = new Color(1f,.15f,.28f,hurtPulse * .4f);
     }
 
     private void EmitBurst(

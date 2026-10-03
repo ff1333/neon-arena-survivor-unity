@@ -118,6 +118,7 @@ public class PlayerShooter : MonoBehaviour
 
             CombatFeedback.Instance?.PlayShot(
                 weapon.Definition.WeaponType);
+            CombatFeedback.Instance?.PlayMuzzle(weapon.Slot.position,direction,weapon.Definition.DisplayColor);
 
             weapon.NextFireTime = Time.time +
                 weapon.Definition.FireInterval / attackSpeedMultiplier;

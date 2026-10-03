@@ -1,0 +1,48 @@
+# Multiplatform Release Verification
+
+Date: 2026-10-04
+
+Branch: `polish/v1.2.0`
+
+## Automated Boundary Verification
+
+Result: PASS
+
+- [x] Main scene is enabled at build index 0
+- [x] Windows build support is installed
+- [x] WebGL build support is installed
+- [x] Android build support is installed
+- [x] Main scene contains no missing scripts
+- [x] Main scene contains four object pools
+- [x] Every object pool has a prefab and positive prewarm size
+- [x] Upgrade UI has three cards and ten release upgrades
+- [x] Player starts with no pre-equipped weapon
+- [x] Starting selection has three distinct weapon choices
+- [x] One weapon type can fill all six weapon slots
+- [x] A seventh weapon is rejected by the total slot limit
+- [x] Enemy types use three distinct experience pickup styles
+- [x] Pooled experience pickup reapplies shape color and scale
+- [x] Pool expands when its prewarmed queue is empty
+- [x] Duplicate Release does not enqueue one instance twice
+- [x] Target selection returns null with no enemies
+- [x] Company name is release-ready
+- [x] Product name is release-ready
+- [x] Version is 1.2.0
+- [x] Android version code is 3
+- [x] Android identifier is release-ready
+- [x] Portrait autorotation is disabled
+- [x] Both landscape orientations are enabled
+
+This verification was executed by an Editor automation tool. It is not represented as a manual user test.
+
+## Platform Builds
+
+| Platform | Build | Independent runtime | Errors | Notes |
+|---|---|---|---:|---|
+| Windows | PENDING | PENDING |  |  |
+| WebGL | PENDING | PENDING |  |  |
+| Android | PENDING | PENDING |  |  |
+
+## Release Decision
+
+PENDING

@@ -12,12 +12,12 @@ using UnityEngine;
 
 public static class ReleasePipeline
 {
-    private const string Version = "1.1.0";
-    private const string ReleaseBranch = "release/v1.1.0";
+    private const string Version = "1.2.0";
+    private const string ReleaseBranch = "polish/v1.2.0";
     private const string MainScene = "Assets/Scenes/Main.unity";
     private const string Identifier = "com.ff1333.neonarenarebuild";
     private const string VerificationReport =
-        "docs/devlogs/16-v1.1.0-multiplatform-release.md";
+        "docs/devlogs/18-v1.2.0-build-verification.md";
     private const string ManualResultsHeading = "## Platform Builds";
 
     [MenuItem("Build/Neon Arena/Configure Release Settings")]
@@ -43,7 +43,7 @@ public static class ReleasePipeline
             NamedBuildTarget.Android,
             Identifier);
 
-        PlayerSettings.Android.bundleVersionCode = 2;
+        PlayerSettings.Android.bundleVersionCode = 3;
         PlayerSettings.Android.minSdkVersion = AndroidSdkVersions.AndroidApiLevel25;
         PlayerSettings.Android.targetSdkVersion = AndroidSdkVersions.AndroidApiLevel36;
         PlayerSettings.Android.targetArchitectures = AndroidArchitecture.ARM64;
@@ -96,8 +96,8 @@ public static class ReleasePipeline
             PlayerSettings.productName == "Neon Arena Rebuild", passed, failed);
         Verify($"Version is {Version}",
             PlayerSettings.bundleVersion == Version, passed, failed);
-        Verify("Android version code is 2",
-            PlayerSettings.Android.bundleVersionCode == 2, passed, failed);
+        Verify("Android version code is 3",
+            PlayerSettings.Android.bundleVersionCode == 3, passed, failed);
         Verify("Android identifier is release-ready",
             PlayerSettings.GetApplicationIdentifier(NamedBuildTarget.Android) ==
             Identifier, passed, failed);
