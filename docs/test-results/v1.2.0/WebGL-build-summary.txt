@@ -1,0 +1,6 @@
+Result: Succeeded
+Platform: WebGL
+Duration: 00:02:18.1800559
+Size: 65528678
+Errors: 0
+Warnings: 1
