@@ -12,7 +12,7 @@ using UnityEngine;
 
 public static class ReleasePipeline
 {
-    private const string Version = "1.2.0";
+    public const string Version = "1.2.0";
     private const string ReleaseBranch = "polish/v1.2.0";
     private const string MainScene = "Assets/Scenes/Main.unity";
     private const string Identifier = "com.ff1333.neonarenarebuild";
