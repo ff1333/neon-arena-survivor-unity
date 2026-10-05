@@ -24,10 +24,19 @@ public class EnemyController : MonoBehaviour
     private float dashPreparationEndTime;
     private float dashEndTime;
     private Vector2 dashDirection;
+    private BossAgent boss;
 
     public static event Action DiedGlobally;
     public Health Health => health;
     public Color CurrentColor => currentColor;
+    public void SpawnBoss(BossAgent owner, float maximum, Color color)
+    {
+        boss = owner;
+        currentColor = color;
+        health.ResetHealth(maximum);
+        spriteRenderer.color = color;
+        hitFlash.SetBaseAppearance(color, transform.localScale);
+    }
 
     private void Awake()
     {
@@ -87,6 +96,8 @@ public class EnemyController : MonoBehaviour
         target = newTarget;
         experiencePool = newExperiencePool;
         definition = newDefinition;
+        var appearance = Resources.Load<Sprite>("Polish/" + definition.BehaviorType);
+        if (appearance != null) spriteRenderer.sprite = appearance;
         hasHitPlayer = false;
         isPreparingDash = false;
         isDashing = false;
@@ -175,6 +186,7 @@ public class EnemyController : MonoBehaviour
 
     private void OnTriggerEnter2D(Collider2D other)
     {
+        if (boss != null) return;
         if (hasHitPlayer || definition == null ||
             !other.CompareTag("Player"))
         {
@@ -220,6 +232,13 @@ public class EnemyController : MonoBehaviour
 
     private void HandleDied()
     {
+        if (boss != null)
+        {
+            DiedGlobally?.Invoke();
+            CombatFeedback.Instance?.PlayEnemyDeath(transform.position, currentColor);
+            boss.Defeated();
+            return;
+        }
         if (definition == null)
         {
             poolMember.Release();

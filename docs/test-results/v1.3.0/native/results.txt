@@ -1,0 +1,15 @@
+NEON_CAMPAIGN_SMOKE_PASS stage=MiniFight
+NEON_PRESENTATION_SMOKE_PASS D:\software\documents\unity_games\_verification\NeonArenaFreeLoadout/Builds/v1.3.0-boss.png
+NEON_CAMPAIGN_SMOKE_PASS stage=FinalFight
+NEON_PRESENTATION_SMOKE_PASS D:\software\documents\unity_games\_verification\NeonArenaFreeLoadout/Builds/v1.3.0-final.png
+NEON_CAMPAIGN_SMOKE_PASS stage=Rewards
+NEON_PRESENTATION_SMOKE_PASS D:\software\documents\unity_games\_verification\NeonArenaFreeLoadout/Builds/v1.3.0-rewards-en.png
+NEON_CAMPAIGN_SMOKE_PASS stage=Rewards
+NEON_PRESENTATION_SMOKE_PASS D:\software\documents\unity_games\_verification\NeonArenaFreeLoadout/Builds/v1.3.0-rewards-wide.png
+NEON_CAMPAIGN_SMOKE_PASS stage=Rewards
+NEON_PRESENTATION_SMOKE_PASS D:\software\documents\unity_games\_verification\NeonArenaFreeLoadout/Builds/v1.3.0-rewards-zh.png
+NEON_PRESENTATION_SMOKE_PASS D:\software\documents\unity_games\_verification\NeonArenaFreeLoadout/Builds/v1.3.0-settings-en.png
+NEON_PRESENTATION_SMOKE_PASS D:\software\documents\unity_games\_verification\NeonArenaFreeLoadout/Builds/v1.3.0-settings-zh.png
+NEON_PRESENTATION_SMOKE_PASS D:\software\documents\unity_games\_verification\NeonArenaFreeLoadout/Builds/v1.3.0-title-zh.png
+NEON_CAMPAIGN_SMOKE_PASS stage=Victory
+NEON_PRESENTATION_SMOKE_PASS D:\software\documents\unity_games\_verification\NeonArenaFreeLoadout/Builds/v1.3.0-victory.png

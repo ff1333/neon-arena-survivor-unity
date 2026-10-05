@@ -1,0 +1,3 @@
+e173ed9483f8eb6f6e7c58d2a4822e73d901b0d983d5ee20fdcba76cc0497d2f  NeonArenaRebuild-Windows-v1.3.0.zip
+ac790ad2505db64f5840e7df4bbdcaadf0396521926de5f4e08c546514aaed88  NeonArenaRebuild-WebGL-v1.3.0.zip
+62e2835de74b96671ea3ad79031850876f0d1dc0ebbaf922c8946f39ab95066b  NeonArenaRebuild-Android-v1.3.0-test.apk

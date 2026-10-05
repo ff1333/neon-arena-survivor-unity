@@ -1,6 +1,6 @@
 [CmdletBinding()]
 param(
-    [string]$Version = "1.0.0"
+    [string]$Version = "1.3.0"
 )
 
 $ErrorActionPreference = "Stop"
@@ -19,6 +19,8 @@ $windowsFiles = @(
     (Join-Path $windowsRoot "MonoBleedingEdge"),
     (Join-Path $windowsRoot "NeonArenaRebuild_Data")
 )
+$d3d12 = Join-Path $windowsRoot "D3D12"
+if (Test-Path -LiteralPath $d3d12) { $windowsFiles += $d3d12 }
 $webglFiles = @(
     (Join-Path $webglRoot "index.html"),
     (Join-Path $webglRoot "Build"),

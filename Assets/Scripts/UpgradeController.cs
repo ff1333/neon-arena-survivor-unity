@@ -23,11 +23,14 @@ public class UpgradeController : MonoBehaviour
     private bool isStartingWeaponSelection;
     private int choicesOpenedFrame = -1;
 
-    public bool IsOpen =>
-        upgradePanel != null && upgradePanel.activeSelf;
+    public bool ExternalChoiceOpen { get; set; }
+    public bool IsOpen => ExternalChoiceOpen ||
+        (upgradePanel != null && upgradePanel.activeSelf);
 
     private void Awake()
     {
+        foreach (var text in upgradePanel.GetComponentsInChildren<TMP_Text>(true))
+            if (text.name == "TitleText") text.gameObject.SetActive(false);
         upgradePanel.SetActive(false);
 
         for (int i = 0; i < buttons.Length; i++)
@@ -119,7 +122,7 @@ public class UpgradeController : MonoBehaviour
 
         selectionCompleted = null;
         isStartingWeaponSelection = false;
-        OpenChoices(choices, $"LEVEL {progress.Level}  /  CHOOSE ONE");
+        OpenChoices(choices, $"LV {progress.Level}  /  CHOOSE ONE");
     }
 
     private List<PlayerUpgradeData> GetEligibleWeaponUpgrades()

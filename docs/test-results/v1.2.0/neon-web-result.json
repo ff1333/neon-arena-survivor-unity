@@ -1,0 +1,17 @@
+{
+  "game": "neon",
+  "errors": [],
+  "canvas": {
+    "x": 160,
+    "y": 109,
+    "width": 960,
+    "height": 540
+  },
+  "screenshots": [
+    "title",
+    "loadout",
+    "gameplay",
+    "pause"
+  ],
+  "note": "Automated Chromium interaction; screenshots require visual review. Not an Android device test."
+}

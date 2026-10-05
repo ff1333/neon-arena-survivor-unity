@@ -30,6 +30,21 @@ public class PlayerShooter : MonoBehaviour
         new List<EquippedWeapon>(6);
 
     public int EquippedCount => equippedWeapons.Count;
+    private float goldenDamage = 1f, goldenSpeed = 1f, goldenRange = 1f;
+    public void ApplyGoldenDamage() => goldenDamage *= 1.4f;
+    public void ApplyGoldenSpeed() => goldenSpeed *= 1.3f;
+    public void ApplyGoldenRange() => goldenRange *= 1.3f;
+    public float EstimatedDamagePerSecond
+    {
+        get
+        {
+            var total = 0f;
+            foreach (var weapon in equippedWeapons)
+                total += weapon.Definition.Damage * damageMultiplier * goldenDamage
+                    * attackSpeedMultiplier * goldenSpeed / weapon.Definition.FireInterval;
+            return total;
+        }
+    }
     public int WeaponSlotCapacity => weaponSlots?.Length ?? 0;
     public float DamageMultiplier => damageMultiplier;
     public float RangeMultiplier => rangeMultiplier;
@@ -91,7 +106,7 @@ public class PlayerShooter : MonoBehaviour
             }
 
             float effectiveRange =
-                weapon.Definition.Range * rangeMultiplier;
+                weapon.Definition.Range * rangeMultiplier * goldenRange;
             EnemyController target = TargetSelector.FindPriorityTarget(
                 weapon.Slot.position,
                 effectiveRange,
@@ -113,14 +128,15 @@ public class PlayerShooter : MonoBehaviour
             projectileObject.GetComponent<Projectile>().Fire(
                 direction,
                 weapon.Definition,
-                damageMultiplier,
-                rangeMultiplier);
+                damageMultiplier * goldenDamage,
+                rangeMultiplier * goldenRange);
 
             CombatFeedback.Instance?.PlayShot(
                 weapon.Definition.WeaponType);
+            CombatFeedback.Instance?.PlayMuzzle(weapon.Slot.position,direction,weapon.Definition.DisplayColor);
 
             weapon.NextFireTime = Time.time +
-                weapon.Definition.FireInterval / attackSpeedMultiplier;
+                weapon.Definition.FireInterval / (attackSpeedMultiplier * goldenSpeed);
         }
     }
 

@@ -15,6 +15,7 @@ public class Projectile : MonoBehaviour
     private float damage;
     private float remainingDistance;
     private float releaseTime;
+    private TrailRenderer trail;
 
     private void Awake()
     {
@@ -22,11 +23,20 @@ public class Projectile : MonoBehaviour
         poolMember = GetComponent<PoolMember>();
         defaultSprite = spriteRenderer.sprite;
         defaultColor = spriteRenderer.color;
+        trail = gameObject.AddComponent<TrailRenderer>();
+        trail.sharedMaterial = ArenaPresentation.TrailMaterial;
+        trail.time = .08f;
+        trail.minVertexDistance = .08f;
+        trail.startWidth = .08f;
+        trail.endWidth = 0f;
+        trail.sortingOrder = 8;
+        trail.emitting = false;
         FindCameraFeedback();
     }
 
     private void OnDisable()
     {
+        if (trail != null) { trail.emitting = false; trail.Clear(); }
         if (spriteRenderer == null)
         {
             return;
@@ -57,6 +67,11 @@ public class Projectile : MonoBehaviour
 
         spriteRenderer.sprite = weapon.ProjectileSprite;
         spriteRenderer.color = weapon.DisplayColor;
+        trail.Clear();
+        trail.startColor = weapon.DisplayColor;
+        trail.endColor = new Color(weapon.DisplayColor.r,weapon.DisplayColor.g,weapon.DisplayColor.b,0f);
+        trail.time = weapon.WeaponType == WeaponType.Laser ? .16f : .07f;
+        trail.emitting = true;
         transform.right = direction;
     }
 
@@ -101,6 +116,7 @@ public class Projectile : MonoBehaviour
                 : Color.white;
 
             enemyHealth.TakeDamage(damage);
+            CombatFeedback.Instance?.ShowDamage(hitPosition,damage,enemyHealth.IsDead);
 
             if (!enemyHealth.IsDead)
             {
