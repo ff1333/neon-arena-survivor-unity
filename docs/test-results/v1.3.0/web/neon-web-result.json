@@ -1,0 +1,20 @@
+{
+  "game": "neon",
+  "errors": [],
+  "canvas": {
+    "x": 160,
+    "y": 109,
+    "width": 960,
+    "height": 540
+  },
+  "screenshots": [
+    "neon-web-gameplay.png",
+    "neon-web-loadout.png",
+    "neon-web-pause.png",
+    "neon-web-settings-en-muted.png",
+    "neon-web-settings-reopened.png",
+    "neon-web-settings-zh.png",
+    "neon-web-title.png"
+  ],
+  "note": "Automated Edge interaction; screenshots require visual review. Not an Android device test or subjective audio audition."
+}

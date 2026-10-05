@@ -1,0 +1,4 @@
+package: name='com.ff1333.neonarenarebuild' versionCode='4' versionName='1.3.0' platformBuildVersionName='16' platformBuildVersionCode='36' compileSdkVersion='36' compileSdkVersionCodename='16'
+sdkVersion:'25'
+targetSdkVersion:'36'
+native-code: 'arm64-v8a'

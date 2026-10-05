@@ -1,0 +1,6 @@
+Result: Succeeded
+Platform: StandaloneWindows64
+Duration: 00:00:22.1633958
+Size: 122503872
+Errors: 0
+Warnings: 1

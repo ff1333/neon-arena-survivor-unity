@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8"?>
+<test-run id="2" testcasecount="6" result="Passed" total="6" passed="6" failed="0" inconclusive="0" skipped="0" asserts="0" engine-version="3.5.0.0" clr-version="4.0.30319.42000" start-time="2026-10-05 02:35:09Z" end-time="2026-10-05 02:35:33Z" duration="23.2106463">
+  <test-suite type="TestSuite" id="1012" name="Neon Arena Rebuild" fullname="Neon Arena Rebuild" runstate="Runnable" testcasecount="6" result="Passed" start-time="2026-10-05 02:35:09Z" end-time="2026-10-05 02:35:33Z" duration="23.210646" total="6" passed="6" failed="0" inconclusive="0" skipped="0" asserts="0">
+    <properties>
+      <property name="platform" value="PlayMode" />
+    </properties>
+    <test-suite type="Assembly" id="1008" name="NeonArena.PlayModeTests.dll" fullname="D:/software/documents/unity_games/_verification/NeonArenaFreeLoadout/Library/ScriptAssemblies/NeonArena.PlayModeTests.dll" runstate="Runnable" testcasecount="6" result="Passed" start-time="2026-10-05 02:35:09Z" end-time="2026-10-05 02:35:33Z" duration="23.201839" total="6" passed="6" failed="0" inconclusive="0" skipped="0" asserts="0">
+      <properties>
+        <property name="_PID" value="39148" />
+        <property name="_APPDOMAIN" value="Unity Child Domain" />
+        <property name="platform" value="PlayMode" />
+        <property name="EditorOnly" value="False" />
+      </properties>
+      <test-suite type="TestFixture" id="1001" name="BossAndSettingsTests" fullname="BossAndSettingsTests" classname="BossAndSettingsTests" runstate="Runnable" testcasecount="6" result="Passed" start-time="2026-10-05 02:35:09Z" end-time="2026-10-05 02:35:33Z" duration="23.200261" total="6" passed="6" failed="0" inconclusive="0" skipped="0" asserts="0">
+        <properties />
+        <test-case id="1007" name="ChineseEnglishSettingsAndVolumePersistAcrossReload" fullname="BossAndSettingsTests.ChineseEnglishSettingsAndVolumePersistAcrossReload" methodname="ChineseEnglishSettingsAndVolumePersistAcrossReload" classname="BossAndSettingsTests" runstate="Runnable" seed="1587787115" result="Passed" start-time="2026-10-05 02:35:09Z" end-time="2026-10-05 02:35:10Z" duration="0.917203" asserts="0">
+          <properties>
+            <property name="_JOINTYPE" value="UnityCombinatorial" />
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+          <output><![CDATA[Sprite Tiling might not appear correctly because the Sprite used is not generated with Full Rect. To fix this, change the Mesh Type in the Sprite's import setting to Full Rect
+Sprite Tiling might not appear correctly because the Sprite used is not generated with Full Rect. To fix this, change the Mesh Type in the Sprite's import setting to Full Rect
+]]></output>
+        </test-case>
+        <test-case id="1004" name="DeathDuringArrivalDoesNotSpawnBoss" fullname="BossAndSettingsTests.DeathDuringArrivalDoesNotSpawnBoss" methodname="DeathDuringArrivalDoesNotSpawnBoss" classname="BossAndSettingsTests" runstate="Runnable" seed="740812980" result="Passed" start-time="2026-10-05 02:35:10Z" end-time="2026-10-05 02:35:13Z" duration="2.545584" asserts="0">
+          <properties>
+            <property name="_JOINTYPE" value="UnityCombinatorial" />
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+          <output><![CDATA[Sprite Tiling might not appear correctly because the Sprite used is not generated with Full Rect. To fix this, change the Mesh Type in the Sprite's import setting to Full Rect
+]]></output>
+        </test-case>
+        <test-case id="1002" name="SixWeaponsRewardsAndFinalBossCompleteVictory" fullname="BossAndSettingsTests.SixWeaponsRewardsAndFinalBossCompleteVictory" methodname="SixWeaponsRewardsAndFinalBossCompleteVictory" classname="BossAndSettingsTests" runstate="Runnable" seed="1663077958" result="Passed" start-time="2026-10-05 02:35:13Z" end-time="2026-10-05 02:35:18Z" duration="4.681575" asserts="0">
+          <properties>
+            <property name="_JOINTYPE" value="UnityCombinatorial" />
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+          <output><![CDATA[Sprite Tiling might not appear correctly because the Sprite used is not generated with Full Rect. To fix this, change the Mesh Type in the Sprite's import setting to Full Rect
+]]></output>
+        </test-case>
+        <test-case id="1006" name="StationaryPlayerDiesInFinalFightWithoutDodging" fullname="BossAndSettingsTests.StationaryPlayerDiesInFinalFightWithoutDodging" methodname="StationaryPlayerDiesInFinalFightWithoutDodging" classname="BossAndSettingsTests" runstate="Runnable" seed="1337850086" result="Passed" start-time="2026-10-05 02:35:18Z" end-time="2026-10-05 02:35:25Z" duration="7.893859" asserts="0">
+          <properties>
+            <property name="_JOINTYPE" value="UnityCombinatorial" />
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+          <output><![CDATA[Sprite Tiling might not appear correctly because the Sprite used is not generated with Full Rect. To fix this, change the Mesh Type in the Sprite's import setting to Full Rect
+]]></output>
+        </test-case>
+        <test-case id="1003" name="TelegraphAllowsEscapeButPunishesStandingStill" fullname="BossAndSettingsTests.TelegraphAllowsEscapeButPunishesStandingStill" methodname="TelegraphAllowsEscapeButPunishesStandingStill" classname="BossAndSettingsTests" runstate="Runnable" seed="486925543" result="Passed" start-time="2026-10-05 02:35:25Z" end-time="2026-10-05 02:35:29Z" duration="3.580506" asserts="0">
+          <properties>
+            <property name="_JOINTYPE" value="UnityCombinatorial" />
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+          <output><![CDATA[Sprite Tiling might not appear correctly because the Sprite used is not generated with Full Rect. To fix this, change the Mesh Type in the Sprite's import setting to Full Rect
+]]></output>
+        </test-case>
+        <test-case id="1005" name="VitalityAndRegenerationWorkDuringFinalArrival" fullname="BossAndSettingsTests.VitalityAndRegenerationWorkDuringFinalArrival" methodname="VitalityAndRegenerationWorkDuringFinalArrival" classname="BossAndSettingsTests" runstate="Runnable" seed="784778931" result="Passed" start-time="2026-10-05 02:35:29Z" end-time="2026-10-05 02:35:33Z" duration="3.567557" asserts="0">
+          <properties>
+            <property name="_JOINTYPE" value="UnityCombinatorial" />
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+          <output><![CDATA[Sprite Tiling might not appear correctly because the Sprite used is not generated with Full Rect. To fix this, change the Mesh Type in the Sprite's import setting to Full Rect
+Saving results to: C:/Users/24786/AppData/LocalLow/FF1333/Neon Arena Rebuild\TestResults.xml
+]]></output>
+        </test-case>
+      </test-suite>
+    </test-suite>
+  </test-suite>
+</test-run>

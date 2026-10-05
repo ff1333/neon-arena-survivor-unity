@@ -2,13 +2,17 @@
 
 使用 Unity 6 与 C# 跟随教程重写并在 AI 辅助下迭代的 2D 生存射击项目。玩家开局从三种武器中选择一把，在有限竞技场中移动并自动射击，击败敌人获得经验，再通过三选一升级构筑最多六个武器槽位的组合。
 
-**当前候选版 v1.2.0**：新增角色/武器精灵、地板、拖尾、伤害数字和界面修正。先看 [新版图文指南](docs/V1_2_0_POLISH_GUIDE.md)。下方 v1.1.0 为已发布的历史版本。
+**当前候选版 v1.3.0**：集齐六武器触发小首领，击败后直接升两级、六项金色奖励选两项，再挑战最终首领并结算胜利。主菜单新增中英文和声音设置。先看 [新版指南与开发记录](docs/V1_3_0_BOSSES_AND_SETTINGS.md) 及 [测试证据](docs/test-results/v1.3.0/README.md)。下方 v1.1.0 为已发布的历史版本。
 
-![Gameplay](docs/images/v1.2.0-combat.png)
+![v1.3.0 title](docs/test-results/v1.3.0/native/v1.3.0-title-zh.png)
+
+![Golden rewards](docs/test-results/v1.3.0/native/v1.3.0-rewards-zh.png)
+
+金色奖励画面由受控测试生成，用于展示六选二界面，不是作者手动通关证明。
 
 ## 下载与版本
 
-- [GitHub Release v1.1.0](https://github.com/ff1333/neon-arena-survivor-unity/releases/tag/v1.1.0)（当前版本）
+- [GitHub Release v1.1.0](https://github.com/ff1333/neon-arena-survivor-unity/releases/tag/v1.1.0)（历史已发布版本）
 - [GitHub Release v1.0.0](https://github.com/ff1333/neon-arena-survivor-unity/releases/tag/v1.0.0)（历史稳定版）
 - Release 附件包含 Windows、WebGL 和 Android 测试包，以及 SHA-256 校验文件。
 - `v1.1.0` Android APK 已在真实 Android 设备上完成安装、开局选武器、移动和主要流程试玩。
@@ -33,6 +37,8 @@
 ## 已实现系统
 
 - 完整游戏循环：开始、移动、自动战斗、经验升级、暂停、死亡结算和重开
+- 六武器触发首领战，金色六选二强化，最终首领、胜利、重玩或退出
+- 默认中文，可切换英文；总音量、音乐、音效和静音设置本地保存
 - 开局武器三选一：选择完成前不计时、不刷怪，选中的武器占用第一个槽位
 - 三种数据驱动武器：Pistol、SMG、Laser，各自拥有伤害、射速、射程、弹速和颜色
 - 六个独立武器槽位，同类武器不设额外上限，每把武器独立冷却和索敌
