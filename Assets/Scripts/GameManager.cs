@@ -36,6 +36,8 @@ public class GameManager : MonoBehaviour
     private bool isGameOver;
     private float elapsedTime;
     private int killCount;
+    public bool IsRunning => hasStarted && !isGameOver;
+    public bool HasWon { get; private set; }
 
     private void Awake()
     {
@@ -55,6 +57,7 @@ public class GameManager : MonoBehaviour
         resumeButton.onClick.AddListener(ResumeRun);
         pauseRestartButton.onClick.AddListener(RestartRun);
         restartButton.onClick.AddListener(RestartRun);
+        gameObject.AddComponent<BossEncounter>().Initialize(this, shooter, playerHealth, progress, spawner, upgradeController);
     }
 
     private void Start()
@@ -70,6 +73,10 @@ public class GameManager : MonoBehaviour
             $"BEST  {FormatTime(bestTime)}  |  {bestKills} KILLS";
         hud.SetState("READY");
         SelectButton(startButton);
+        PortfolioSettingsMenu.Place(restartButton.transform,new Vector2(.08f,.08f),new Vector2(.48f,.22f));
+        var quit=PortfolioSettingsMenu.MakeButton(restartButton.transform.parent,"Quit Result",
+            Application.platform == RuntimePlatform.WebGLPlayer ? "RETURN TO TITLE" : "QUIT",QuitRun);
+        PortfolioSettingsMenu.Place(quit.transform,new Vector2(.52f,.08f),new Vector2(.92f,.22f));
     }
 
     private void OnDestroy()
@@ -94,6 +101,7 @@ public class GameManager : MonoBehaviour
 
     private void Update()
     {
+        if (PortfolioSettings.IsOpen) return;
         Keyboard keyboard = Keyboard.current;
 
         if (!hasStarted && !isChoosingStartingWeapon && keyboard != null &&
@@ -124,6 +132,7 @@ public class GameManager : MonoBehaviour
 
     public void StartRun()
     {
+        if (PortfolioSettings.IsOpen) return;
         if (hasStarted || isChoosingStartingWeapon)
         {
             return;
@@ -262,8 +271,32 @@ public class GameManager : MonoBehaviour
             $"BEST  {FormatTime(bestTime)}  |  {bestKills} KILLS";
         gameOverPanel.transform.SetAsLastSibling();
         gameOverPanel.SetActive(true);
-        hud.SetState("RUN OVER");
+        foreach (var label in gameOverPanel.GetComponentsInChildren<TMP_Text>(true))
+            if (label.name == "TitleText")
+            {
+                label.text = HasWon ? "VICTORY" : "RUN OVER";
+                label.color = HasWon ? new Color(.4f,1f,.7f) : new Color(1f,.35f,.4f);
+            }
+        hud.SetState(HasWon ? "FINAL BOSS DEFEATED" : "RUN OVER");
         SelectButton(restartButton);
+    }
+
+    public void WinRun()
+    {
+        if (isGameOver || playerHealth.IsDead) return;
+        HasWon = true;
+        HandlePlayerDied();
+    }
+
+    public void QuitRun()
+    {
+#if UNITY_EDITOR
+        UnityEditor.EditorApplication.isPlaying = false;
+#elif UNITY_WEBGL
+        RestartRun();
+#else
+        Application.Quit();
+#endif
     }
 
     private static void SelectButton(Button button)

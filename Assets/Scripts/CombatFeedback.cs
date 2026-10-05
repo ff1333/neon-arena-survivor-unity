@@ -43,6 +43,8 @@ public class CombatFeedback : MonoBehaviour
         feedbackParticles = GetComponent<ParticleSystem>();
 
         ConfigureAudioSource();
+        PortfolioSettings.Changed += ApplyAudioSettings;
+        ApplyAudioSettings();
         ConfigureParticles();
         CreateClips();
         BuildVisualFeedback();
@@ -50,11 +52,14 @@ public class CombatFeedback : MonoBehaviour
 
     private void OnDestroy()
     {
+        PortfolioSettings.Changed -= ApplyAudioSettings;
         if (Instance == this)
         {
             Instance = null;
         }
     }
+
+    private void ApplyAudioSettings() { if (audioSource != null) audioSource.volume = masterVolume * PortfolioSettings.Effects; }
 
     public void PlayShot(WeaponType weaponType)
     {

@@ -45,6 +45,18 @@ public class PlayerProgress : MonoBehaviour
         ExperienceChanged?.Invoke(Experience, ExperienceToNextLevel);
     }
 
+    // Boss reward replaces the two normal choice screens with one six-choice reward.
+    public void GrantBossLevels()
+    {
+        for (var i = 0; i < 2; i++)
+        {
+            Level++;
+            ExperienceToNextLevel = Mathf.CeilToInt(ExperienceToNextLevel * 1.35f);
+            LevelChanged?.Invoke(Level);
+        }
+        ExperienceChanged?.Invoke(Experience, ExperienceToNextLevel);
+    }
+
 #if UNITY_EDITOR
     [ContextMenu("Debug/Add One Level")]
     private void DebugAddOneLevel()

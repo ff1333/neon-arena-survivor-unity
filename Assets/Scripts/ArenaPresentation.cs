@@ -43,6 +43,8 @@ public sealed class ArenaPresentation : MonoBehaviour
         }
         foreach (var image in FindObjectsByType<Image>(FindObjectsInactive.Include,FindObjectsSortMode.None))
         {
+            var canvas = image.GetComponentInParent<Canvas>();
+            if (canvas != null && (canvas.name == "Boss Canvas" || canvas.name == "Settings Canvas")) continue;
             if (image.name == "ModalWindow") image.color = new Color(.065f,.075f,.09f,.98f);
             if (image.TryGetComponent<Button>(out var button))
             {
