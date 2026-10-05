@@ -2,7 +2,7 @@
 
 使用 Unity 6 与 C# 跟随教程重写并在 AI 辅助下迭代的 2D 生存射击项目。玩家开局从三种武器中选择一把，在有限竞技场中移动并自动射击，击败敌人获得经验，再通过三选一升级构筑最多六个武器槽位的组合。
 
-**当前候选版 v1.3.0**：集齐六武器触发小首领，击败后直接升两级、六项金色奖励选两项，再挑战最终首领并结算胜利。主菜单新增中英文和声音设置。先看 [新版指南与开发记录](docs/V1_3_0_BOSSES_AND_SETTINGS.md) 及 [测试证据](docs/test-results/v1.3.0/README.md)。下方 v1.1.0 为已发布的历史版本。
+**当前正式版 v1.3.0**：集齐六武器触发小首领，击败后直接升两级、六项金色奖励选两项，再挑战最终首领并结算胜利。主菜单新增中英文和声音设置。先看 [v1.3.0 指南与开发记录](docs/V1_3_0_BOSSES_AND_SETTINGS.md) 及 [验证证据](docs/test-results/v1.3.0/README.md)。
 
 ![v1.3.0 title](docs/test-results/v1.3.0/native/v1.3.0-title-zh.png)
 
@@ -12,10 +12,12 @@
 
 ## 下载与版本
 
+- [GitHub Release v1.3.0](https://github.com/ff1333/neon-arena-survivor-unity/releases/tag/v1.3.0)（当前正式版，Windows / WebGL / Android）
+- [v1.3.0 发布说明](docs/RELEASE_NOTES_v1.3.0.md)
 - [GitHub Release v1.1.0](https://github.com/ff1333/neon-arena-survivor-unity/releases/tag/v1.1.0)（历史已发布版本）
 - [GitHub Release v1.0.0](https://github.com/ff1333/neon-arena-survivor-unity/releases/tag/v1.0.0)（历史稳定版）
 - Release 附件包含 Windows、WebGL 和 Android 测试包，以及 SHA-256 校验文件。
-- `v1.1.0` Android APK 已在真实 Android 设备上完成安装、开局选武器、移动和主要流程试玩。
+- `v1.3.0` Android APK 已由作者在真实设备上完成基本验收，没有发现阻塞发布的问题；多机型兼容与长时间压力仍未覆盖。
 - 在线 WebGL 试玩与演示视频将在对应公开页面完成后补充链接。
 
 ## 操作
@@ -109,24 +111,29 @@ docs/
 
 ## 验证结果
 
-- 发布边界自动检查：Main 场景、四个对象池、升级配置、目标选择和平台设置通过
-- Windows：独立正式包完成开始、移动、升级、暂停、死亡和重开流程
-- WebGL：本地 HTTP 环境完成开始、战斗、升级选择和结算，浏览器 Console 无游戏错误
-- Android：测试 APK 已安装到真实设备并完成触摸移动和主要流程试玩
-- 十分钟发布候选测试：存活 `10:00`，最终 `913` 击杀，运行日志无游戏错误
+- PlayMode：`6/6 PASS`，覆盖六武器触发、两级奖励、金色六选二、最终首领、胜利和设置持久化
+- 发布边界：`24/24 PASS`，覆盖 Main 场景、对象池、配置、目标选择、版本和平台设置
+- Windows：正式包启动及 v1.3.0 首领、奖励、胜利和设置画面检查通过
+- WebGL：Edge 中完成设置切换、开始、移动与暂停交互，未捕获游戏异常
+- Android：v1.3.0 已由作者完成一次真实设备基本验收，无阻塞问题
+- Windows / WebGL / Android 构建均成功，附件 SHA-256 和 APK 签名已核对
 
-详细过程与适用边界见 [`docs/devlogs`](docs/devlogs)。
+详细过程与适用边界见 [v1.3.0 验证证据](docs/test-results/v1.3.0/README.md)。
 
 ## 已知限制
 
 - 当前为单场景单机生存模式，没有存档成长、联网和完整商业化内容。
 - 角色和敌人采用简洁几何视觉，重点展示玩法代码、工程拆分和多平台交付。
 - Profiler 前后截图来自不同玩法规模的提交，只能证明实施了对象池和记录了代表帧，不能用于声称确定的性能提升比例。
-- Android 已完成一次真实设备试玩，但尚未覆盖多型号兼容性、长时间压力和商店签名发布测试。
-- `v1.1.0` 新增开局武器三选一、自由六槽武器构筑和敌人专属经验物；`v1.0.0` 保留原有两把同类武器上限。
+- Android v1.3.0 已完成一次真实设备基本验收，但尚未覆盖多型号兼容性、长时间压力和商店审核。
+- 首领截图中的快速阶段推进属于受控自动验证，不代表作者在对应时间内手动通关；不同构筑的数值平衡仍需持续试玩。
+- `v1.1.0`、`v1.0.0` 作为历史版本保留，不代表当前规则。
 
 ## 开发记录
 
+- [v1.3.0 首领闭环、中英文设置与实现说明](docs/V1_3_0_BOSSES_AND_SETTINGS.md)
+- [v1.3.0 自动验证、平台构建与已知边界](docs/test-results/v1.3.0/README.md)
+- [v1.2.0 美术与战斗表现迭代](docs/V1_2_0_POLISH_GUIDE.md)
 - [完整游戏循环](docs/devlogs/04-complete-game-loop.md)
 - [多武器槽位](docs/devlogs/05-multi-weapon-loadout.md)
 - [升级平衡](docs/devlogs/07-upgrade-balance.md)
